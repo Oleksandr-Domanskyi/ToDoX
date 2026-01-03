@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Database\EntityConfiguration\" />
+    <Folder Include="Mappers\" />
+    <Folder Include="Repositories\IRepositories\" />
+    <Folder Include="Services\" />
+    <Folder Include="Services\IServices\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentResults" Version="4.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SharedModules\ToDoX.Infrastructure\ToDoX.Infrastructure.csproj" />
+    <ProjectReference Include="..\Plans.Core\Plans.Core.csproj" />
+  </ItemGroup>
+
+</Project>

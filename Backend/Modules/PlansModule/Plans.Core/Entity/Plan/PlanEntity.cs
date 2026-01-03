@@ -9,18 +9,28 @@ public class PlanEntity : Entity<Guid>
     public List<TaskEntity> Tasks { get; private set; } = new List<TaskEntity>();
 
     public DateTime CreatedAt { get; private set; }
-    public DateTime UpdatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
 
-    public PlanEntity(Guid id, string name) : base(id)
+    private PlanEntity() { }
+    public PlanEntity(string name, string description)
     {
         Name = name;
+        Description = description;
         CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
     }
-
     public void UpdateName(string newName)
     {
         Name = newName;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    public void UpdateDescription(string newDescription)
+    {
+        Description = newDescription;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    public void AddTask(List<TaskEntity> task)
+    {
+        Tasks.AddRange(task);
         UpdatedAt = DateTime.UtcNow;
     }
 }

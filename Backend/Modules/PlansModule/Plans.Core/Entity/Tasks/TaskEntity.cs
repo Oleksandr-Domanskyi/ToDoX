@@ -1,13 +1,15 @@
 using System;
+using System.Collections;
 
 namespace ToDoX.Core.Entity;
 
 public class TaskEntity : Entity<Guid>
 {
+    public Guid PlanId { get; private set; }
     public string Title { get; private set; } = string.Empty;
 
     private readonly List<TaskDescriptionBlock> _blocks = new();
-    public IReadOnlyList<TaskDescriptionBlock> Blocks => _blocks;
+    public ICollection<TaskDescriptionBlock> Blocks => _blocks;
 
     public bool IsCompleted { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -15,11 +17,14 @@ public class TaskEntity : Entity<Guid>
 
     private TaskEntity() { }
 
-    public TaskEntity(string title)
+    public TaskEntity(string title, Guid planId)
     {
+        PlanId = planId;
         SetTitle(title);
         CreatedAt = DateTime.UtcNow;
+        IsCompleted = false;
     }
+
 
     public void SetTitle(string title)
     {
