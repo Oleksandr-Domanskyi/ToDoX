@@ -1,0 +1,6 @@
+@ToDoX.API_HostAddress = http://localhost:5163
+
+GET {{ToDoX.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

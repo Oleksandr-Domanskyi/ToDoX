@@ -1,0 +1,44 @@
+## Build results
+bin/
+obj/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Logs
+*.log
+
+## Test results
+TestResults/
+
+## NuGet
+packages/
+*.nupkg
+
+## Publish
+publish/
+wwwroot/lib/
+
+## Secrets
+launchSettings.json
+appsettings.Development.json
+appsettings.json
+secrets.json
+
+## EF Core
+Migrations/*_Snapshot.cs
