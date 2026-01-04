@@ -1,6 +1,11 @@
 using System.Text.Json.Serialization;
+using ToDoX.Infrastructure.Extensions;
+using Plans.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddPlansModule(builder.Configuration);
+builder.Services.AddSharedInfrastructure();
 
 
 builder.Services.AddControllers().AddJsonOptions(o =>

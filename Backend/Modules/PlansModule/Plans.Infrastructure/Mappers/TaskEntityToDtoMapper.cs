@@ -7,8 +7,7 @@ namespace Plans.Infrastructure.Mappers;
 
 public static class TaskEntityToDtoMapper
 {
-    public static TaskDto MapToDto(TaskEntity entity)
-    => new TaskDto
+    public static TaskDto MapToDto(TaskEntity entity) => new()
     {
         Id = entity.Id,
         PlanId = entity.PlanId,
@@ -16,14 +15,11 @@ public static class TaskEntityToDtoMapper
         IsCompleted = entity.IsCompleted,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt,
-        Blocks = entity.Blocks.Select(b => MapDescriptionBlock(b)).ToList()
+        Blocks = entity.Blocks.Select(MapDescriptionBlock).ToList()
     };
 
-    public static TaskEntity CreateToEntity(CreateTaskDescriptionBlockRequest request)
-    {
-        var task = new TaskEntity(request.Title, request.PlanId);
-        return task;
-    }
+    public static List<TaskDto> MapToDto(IEnumerable<TaskEntity> entities) =>
+        entities.Select(MapToDto).ToList();
 
     public static TaskEntity Map(CreateTaskDescriptionBlockRequest request)
     {
@@ -57,33 +53,31 @@ public static class TaskEntityToDtoMapper
         }
         return task;
     }
-    private static TaskDescriptionBlockDto MapDescriptionBlock(TaskDescriptionBlock block)
-    {
-        return block switch
+
+    private static TaskDescriptionBlockDto MapDescriptionBlock(TaskDescriptionBlock block) =>
+        block switch
         {
-            CheckListBlock checkListBlock => new CheckListBlockDto
+            TextBlock t => new TextBlockDto
             {
-                Id = checkListBlock.Id,
-                TaskId = checkListBlock.TaskId,
-                Type = "CheckList",
-                Items = checkListBlock.Items
+                Type = "text",
+                Content = t.Content
             },
-            CodeBlock codeBlock => new CodeBlockDto
+            CheckListBlock c => new CheckListBlockDto
             {
-                Id = codeBlock.Id,
-                TaskId = codeBlock.TaskId,
-                Type = "Code",
-                CodeContent = codeBlock.CodeContent,
-                Language = codeBlock.Language
+                Type = "checklist",
+                Items = c.Items
             },
-            ImageBlock imageBlock => new ImageBlockDto
+            CodeBlock cb => new CodeBlockDto
             {
-                Id = imageBlock.Id,
-                TaskId = imageBlock.TaskId,
-                Type = "Image",
-                ImageUrl = imageBlock.ImageUrl
+                Type = "code",
+                CodeContent = cb.CodeContent,
+                Language = cb.Language
             },
-            _ => throw new ArgumentException("Unknown block type")
+            ImageBlock i => new ImageBlockDto
+            {
+                Type = "image",
+                ImageUrl = i.ImageUrl
+            },
+            _ => throw new ArgumentException($"Unknown block type: {block.GetType().Name}")
         };
-    }
 }

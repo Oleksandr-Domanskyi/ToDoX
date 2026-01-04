@@ -24,8 +24,6 @@ public class TaskEntity : Entity<Guid>
         CreatedAt = DateTime.UtcNow;
         IsCompleted = false;
     }
-
-
     public void SetTitle(string title)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -55,6 +53,14 @@ public class TaskEntity : Entity<Guid>
         _blocks.Add(new CodeBlock(Id, codeContent, language));
         Touch();
     }
+    private void Touch() => UpdatedAt = DateTime.UtcNow;
+
+    public void ClearBlocks()
+    {
+        _blocks.Clear();
+        Touch();
+    }
+
     public void RemoveBlockAt(int index)
     {
         EnsureIndex(index);
@@ -106,26 +112,11 @@ public class TaskEntity : Entity<Guid>
         Touch();
     }
 
-    public void MoveBlock(int fromIndex, int toIndex)
-    {
-        EnsureIndex(fromIndex);
-        if (toIndex < 0 || toIndex >= _blocks.Count)
-            throw new ArgumentOutOfRangeException(nameof(toIndex));
-
-        if (fromIndex == toIndex) return;
-
-        var block = _blocks[fromIndex];
-        _blocks.RemoveAt(fromIndex);
-        _blocks.Insert(toIndex, block);
-        Touch();
-    }
-
     private void EnsureIndex(int index)
     {
         if (index < 0 || index >= _blocks.Count)
             throw new ArgumentOutOfRangeException(nameof(index));
     }
 
-    private void Touch() => UpdatedAt = DateTime.UtcNow;
 }
 

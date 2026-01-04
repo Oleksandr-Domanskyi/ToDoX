@@ -16,7 +16,7 @@ public static class ToDoXInfrastructureExtensions
      where T : DbContext
     {
         services.AddDbContext<T>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("ConnectionStrings"),
+            options.UseNpgsql(configuration.GetConnectionString("PosgreSQL"),
                 options => options.MigrationsAssembly(typeof(T).Assembly.FullName)));
     }
 }

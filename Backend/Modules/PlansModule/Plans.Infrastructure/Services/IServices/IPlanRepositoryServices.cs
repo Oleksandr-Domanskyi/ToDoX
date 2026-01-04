@@ -1,9 +1,16 @@
 using System;
+using FluentResults;
+using Plans.Core.DTO;
+using Plans.Core.DTO.Request;
 using ToDoX.Infrastructure.IRepositoryManager;
 
 namespace Plans.Infrastructure.Services.IServices;
 
 public interface IPlanRepositoryServices
 {
-
+    Task<Result<List<PlanDto>>> GetAllPlans();
+    Task<Result<PlanDto>> GetById(Guid id);
+    Task<Result> CreatePlan(CreatePlanRequest createplanRequest);
+    Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest);
+    Task<Result> DeletePlan(Guid id);
 }

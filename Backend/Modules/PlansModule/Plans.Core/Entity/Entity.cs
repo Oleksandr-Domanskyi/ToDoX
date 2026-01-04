@@ -7,4 +7,9 @@ public abstract class Entity<TId> where TId : notnull
     public TId Id { get; private set; } = default!;
 
     protected Entity() { }
+
+    protected void SetId(TId id)
+    {
+        Id = id;
+    }
 }

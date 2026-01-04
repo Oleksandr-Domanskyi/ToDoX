@@ -1,11 +1,15 @@
 using System;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.EntityFrameworkCore;
+using Plans.Core.DTO;
+using Plans.Core.DTO.Request;
 using Plans.Infrastructure.Repositories.IRepositories;
 using ToDoX.Core.Entity;
 using ToDoX.Infrastructure.Database;
 
 namespace Plans.Infrastructure.Repositories;
 
-public class PlanRepository : IPlanrepository
+public class PlanRepository : IPlanRepository
 {
     private readonly PlanShemeDbContext _dbContext;
 
@@ -13,26 +17,38 @@ public class PlanRepository : IPlanrepository
 
     public async Task AddAsync(PlanEntity entity, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await _dbContext.Plans.AddAsync(entity, cancellationToken);
     }
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var entity = await _dbContext.Plans.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        if (entity != null)
+            _dbContext.Plans.Remove(entity);
     }
 
-    public Task<IEnumerable<PlanEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<PlanEntity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.Plans.ToListAsync(cancellationToken);
     }
 
-    public Task<PlanEntity> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<PlanEntity> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var entity = await _dbContext.Plans.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        if (entity == null)
+            throw new Exception($"Plan with id {id} not found");
+        return entity;
     }
 
-    public Task UpdateAsync(PlanEntity entity, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(UpdatePlanRequest updatedto, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var plan = await _dbContext.Plans.FirstOrDefaultAsync(p => p.Id == updatedto.Id, cancellationToken);
+        if (plan == null)
+            throw new Exception($"Plan with id {updatedto.Id} not found");
+
+        plan.UpdateName(updatedto.Name);
+        plan.UpdateDescription(updatedto.Description);
+
+        _dbContext.Plans.Update(plan);
     }
 }

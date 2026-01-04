@@ -7,7 +7,7 @@ public sealed class CheckListBlock : TaskDescriptionBlock
     private CheckListBlock() { }
     public CheckListBlock(Guid taskEntityId, List<string> items) : base(taskEntityId)
     {
-
+        Items = items ?? throw new ArgumentNullException(nameof(items));
     }
 }
 
