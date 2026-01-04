@@ -7,19 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="EndPoints\" />
+    <Folder Include="CQRS\" />
+    <Folder Include="CQRS\Plans\" />
+    <Folder Include="CQRS\Plans\Commands\" />
+    <Folder Include="CQRS\Plans\Commands\CreateCommand\" />
+    <Folder Include="CQRS\Plans\Commands\DeleteCommand\" />
+    <Folder Include="CQRS\Plans\Commands\UpdateCommand\" />
+    <Folder Include="CQRS\Plans\Queries\" />
+    <Folder Include="CQRS\Plans\Queries\GetAllQuery\" />
+    <Folder Include="CQRS\Plans\Queries\GetByIdQuery\" />
     <Folder Include="Extensions\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="14.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Plans.Application\Plans.Application.csproj" />
     <ProjectReference Include="..\Plans.Core\Plans.Core.csproj" />
     <ProjectReference Include="..\Plans.Infrastructure\Plans.Infrastructure.csproj" />
   </ItemGroup>

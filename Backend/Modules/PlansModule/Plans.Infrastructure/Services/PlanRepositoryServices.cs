@@ -16,11 +16,12 @@ public class PlanRepositoryServices : IPlanRepositoryServices
     public PlanRepositoryServices(IUnitOfWork<PlanShemeDbContext, IPlanRepository> unitOfWork) => _unitOfWork = unitOfWork;
 
 
-    public async Task<Result<List<PlanDto>>> GetAllPlans() => await Result.Try(async Task () => await GetAllPlansAsync());
-    public async Task<Result<PlanDto>> GetById(Guid id) => await Result.Try(async Task () => await GetByIdAsync(id));
-    public async Task<Result> CreatePlan(CreatePlanRequest createplanRequest) => await Result.Try(async Task () => await CreatePlanAsync(createplanRequest));
-    public async Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest) => await Result.Try(async Task () => await UpdatePlanAsync(updatePlanRequest));
-    public async Task<Result> DeletePlan(Guid id) => await Result.Try(async Task () => await DeletePlanAsync(id));
+    public Task<Result<List<PlanDto>>> GetAllPlans() => Result.Try(GetAllPlansAsync);
+    public Task<Result<PlanDto>> GetById(Guid id) => Result.Try(() => GetByIdAsync(id));
+    public Task<Result> CreatePlan(CreatePlanRequest createPlanRequest) => Result.Try(() => CreatePlanAsync(createPlanRequest));
+    public Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest) => Result.Try(() => UpdatePlanAsync(updatePlanRequest));
+    public Task<Result> DeletePlan(Guid id) => Result.Try(() => DeletePlanAsync(id));
+
 
     private async Task CreatePlanAsync(CreatePlanRequest createplanRequest)
     {

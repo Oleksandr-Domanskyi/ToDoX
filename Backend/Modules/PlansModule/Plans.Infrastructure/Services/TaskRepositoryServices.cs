@@ -14,11 +14,11 @@ public class TaskRepositoryServices(IUnitOfWork<PlanShemeDbContext, ITaskReposit
 {
     private readonly IUnitOfWork<PlanShemeDbContext, ITaskRepository> _unitOfWork = unitOfWork;
 
-    public async Task<Result<List<TaskDto>>> GetAllTasks(Guid planId, CancellationToken cancellationToken = default) => await Result.Try(async Task () => await GetAllTasksAsync(planId, cancellationToken));
-    public async Task<Result<TaskDto>> GetById(Guid id, CancellationToken cancellationToken = default) => await Result.Try(async Task () => await GetTaskByIdAsync(id, cancellationToken));
-    public async Task<Result> CreateTask(CreateTaskDescriptionBlockRequest createTaskRequest, CancellationToken cancellationToken = default) => await Result.Try(async Task () => await CreateTaskAsync(createTaskRequest, cancellationToken));
-    public async Task<Result> UpdateTask(TaskDto updateTaskRequest, CancellationToken cancellationToken = default) => await Result.Try(async Task () => await UpdateTaskAsync(updateTaskRequest, cancellationToken));
-    public async Task<Result> DeleteTask(Guid id, CancellationToken cancellationToken = default) => await Result.Try(async Task () => await DeleteTaskAsync(id, cancellationToken));
+    public Task<Result<List<TaskDto>>> GetAllTasks(Guid planId, CancellationToken cancellationToken = default) => Result.Try(() => GetAllTasksAsync(planId, cancellationToken));
+    public Task<Result<TaskDto>> GetById(Guid id, CancellationToken cancellationToken = default) => Result.Try(() => GetTaskByIdAsync(id, cancellationToken));
+    public Task<Result> CreateTask(CreateTaskDescriptionBlockRequest createTaskRequest, CancellationToken cancellationToken = default) => Result.Try(() => CreateTaskAsync(createTaskRequest, cancellationToken));
+    public Task<Result> UpdateTask(TaskDto updateTaskRequest, CancellationToken cancellationToken = default) => Result.Try(() => UpdateTaskAsync(updateTaskRequest, cancellationToken));
+    public Task<Result> DeleteTask(Guid id, CancellationToken cancellationToken = default) => Result.Try(() => DeleteTaskAsync(id, cancellationToken));
 
     private async Task CreateTaskAsync(CreateTaskDescriptionBlockRequest createTaskRequest, CancellationToken cancellationToken = default)
     {
