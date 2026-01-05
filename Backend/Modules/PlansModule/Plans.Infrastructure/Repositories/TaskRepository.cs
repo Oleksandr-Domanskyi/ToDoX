@@ -20,11 +20,11 @@ public class TaskRepository : ITaskRepository
 
     public async Task<List<TaskEntity>> GetAllAsync(Guid planId, CancellationToken cancellationToken = default)
     {
-        return await _dbcontext.Tasks.Where(t => t.PlanId == planId).ToListAsync(cancellationToken);
+        return await _dbcontext.Tasks.Where(t => t.PlanId == planId).Include(t => t.Blocks).ToListAsync(cancellationToken);
     }
-    public async Task<TaskEntity> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<TaskEntity> GetByIdAsync(Guid planId, Guid id, CancellationToken cancellationToken = default)
     {
-        var task = await _dbcontext.Tasks.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var task = await _dbcontext.Tasks.Include(t => t.Blocks).FirstOrDefaultAsync(t => t.Id == id && t.PlanId == planId, cancellationToken);
         if (task == null)
             throw new Exception($"Task with id {id} not found");
         return task;
@@ -48,9 +48,9 @@ public class TaskRepository : ITaskRepository
         TaskBlockUpdater.ApplyBlocks(task, dto.Blocks);
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid planId, Guid id, CancellationToken cancellationToken = default)
     {
-        var task = await _dbcontext.Tasks.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var task = await _dbcontext.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.PlanId == planId, cancellationToken);
 
         if (task == null)
             throw new Exception($"Task with id {id} not found");

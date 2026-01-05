@@ -10,7 +10,6 @@
     <Folder Include="Database\EntityConfiguration\" />
     <Folder Include="Extentions\" />
     <Folder Include="Mappers\" />
-    <Folder Include="Services\IServices\" />
   </ItemGroup>
 
   <ItemGroup>

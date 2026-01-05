@@ -16,9 +16,9 @@ public static class PlanEndpoints
 {
     public static void MapPlanEndpoints(this IEndpointRouteBuilder endpoint)
     {
-        endpoint.MapGet("/plans", async (IMediator mediator) =>
+        endpoint.MapGet("/plans", async (IMediator mediator, CancellationToken cancellationToken) =>
         {
-            var plans = await mediator.Send(new PlanGetAllQuery());
+            var plans = await mediator.Send(new PlanGetAllQuery(), cancellationToken);
             return Results.Ok(plans);
         });
         endpoint.MapGet("/plans/{id}", async (Guid id, IMediator mediator) =>
@@ -26,19 +26,19 @@ public static class PlanEndpoints
             var plan = await mediator.Send(new PlanGetByIdQuery(id));
             return plan is null ? Results.NotFound("Plan not found") : Results.Ok(plan);
         });
-        endpoint.MapPost("/plans/Create", async (CreatePlanRequest request, IMediator mediator) =>
+        endpoint.MapPost("/plans/Create", async (CreatePlanRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
-            await mediator.Send(new PlanCreateCommand(request));
+            await mediator.Send(new PlanCreateCommand(request), cancellationToken);
             return Results.Ok($"Plan was created!!!");
         });
-        endpoint.MapPut("/plans/Update", async (UpdatePlanRequest request, IMediator mediator) =>
+        endpoint.MapPut("/plans/Update", async (UpdatePlanRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
-            await mediator.Send(new PlanUpdateCommand(request));
+            await mediator.Send(new PlanUpdateCommand(request), cancellationToken);
             return Results.Ok($"Plan {request.Id} was updated!!!");
         });
-        endpoint.MapDelete("/plans/Delete/{id}", async (Guid id, IMediator mediator) =>
+        endpoint.MapDelete("/plans/Delete/{id}", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
         {
-            await mediator.Send(new PlanDeleteCommand(id));
+            await mediator.Send(new PlanDeleteCommand(id), cancellationToken);
             return Results.Ok($"Plan {id} was deleted!!!");
         });
 

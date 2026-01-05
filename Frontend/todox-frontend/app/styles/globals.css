@@ -1,0 +1,77 @@
+
+
+:root {
+  /* Backgrounds */
+  --app-bg: #1e1e1e;        
+  --panel-bg: #252526;      
+  --card-bg: #1f1f1f;
+  --elevated-bg: #2a2a2a;
+
+  /* Borders */
+  --border: #2a2a2a;
+  --border-strong: #3a3a3a;
+
+  /* Text */
+  --text: #d4d4d4;
+  --text-2: #b3b3b3;
+  --text-3: #9a9a9a;
+
+  /* Accents */
+  --accent-yellow: #d7ba7d;
+  --accent-blue: #8ab4ff;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--text);
+
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/*
+   App layout
+*/
+
+.app_shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+
+  width: 100vw;
+  height: 100vh;
+
+  background: var(--app-bg);
+  overflow: hidden;
+}
+
+/* Sidebar column */
+aside {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Main content column */
+.app_main {
+  height: 100vh;
+  overflow-y: auto;
+  min-width: 0;
+  background: transparent;
+}
+
+/* 
+   Base reset
+*/
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

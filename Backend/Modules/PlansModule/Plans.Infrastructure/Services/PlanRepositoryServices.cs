@@ -16,25 +16,25 @@ public class PlanRepositoryServices : IPlanRepositoryServices
     public PlanRepositoryServices(IUnitOfWork<PlanShemeDbContext, IPlanRepository> unitOfWork) => _unitOfWork = unitOfWork;
 
 
-    public Task<Result<List<PlanDto>>> GetAllPlans() => Result.Try(GetAllPlansAsync);
+    public Task<Result<List<PlanDto>>> GetAllPlans(CancellationToken cancellationToken = default) => Result.Try(() => GetAllPlansAsync(cancellationToken));
     public Task<Result<PlanDto>> GetById(Guid id) => Result.Try(() => GetByIdAsync(id));
-    public Task<Result> CreatePlan(CreatePlanRequest createPlanRequest) => Result.Try(() => CreatePlanAsync(createPlanRequest));
-    public Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest) => Result.Try(() => UpdatePlanAsync(updatePlanRequest));
-    public Task<Result> DeletePlan(Guid id) => Result.Try(() => DeletePlanAsync(id));
+    public Task<Result> CreatePlan(CreatePlanRequest createPlanRequest, CancellationToken cancellationToken = default) => Result.Try(() => CreatePlanAsync(createPlanRequest, cancellationToken));
+    public Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest, CancellationToken cancellationToken = default) => Result.Try(() => UpdatePlanAsync(updatePlanRequest, cancellationToken));
+    public Task<Result> DeletePlan(Guid id, CancellationToken cancellationToken = default) => Result.Try(() => DeletePlanAsync(id, cancellationToken));
 
 
-    private async Task CreatePlanAsync(CreatePlanRequest createplanRequest)
+    private async Task CreatePlanAsync(CreatePlanRequest createplanRequest, CancellationToken cancellationToken = default)
     {
         var planEntity = PlatToDtoMapper.CreateMap(createplanRequest);
         await _unitOfWork.Repository.AddAsync(planEntity);
         await _unitOfWork.SaveChangesAsync();
     }
-    private async Task UpdatePlanAsync(UpdatePlanRequest updatePlanRequest)
+    private async Task UpdatePlanAsync(UpdatePlanRequest updatePlanRequest, CancellationToken cancellationToken = default)
     {
         await _unitOfWork.Repository.UpdateAsync(updatePlanRequest);
         await _unitOfWork.SaveChangesAsync();
     }
-    private async Task DeletePlanAsync(Guid id)
+    private async Task DeletePlanAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await _unitOfWork.Repository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
@@ -44,7 +44,7 @@ public class PlanRepositoryServices : IPlanRepositoryServices
         var model = await _unitOfWork.Repository.GetByIdAsync(id);
         return PlatToDtoMapper.MapToDto(model);
     }
-    private async Task<List<PlanDto>> GetAllPlansAsync()
+    private async Task<List<PlanDto>> GetAllPlansAsync(CancellationToken cancellationToken = default)
     {
         var model = await _unitOfWork.Repository.GetAllAsync();
         return PlatToDtoMapper.MapToDtoList(model);

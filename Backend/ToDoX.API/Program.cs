@@ -8,6 +8,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddPlansModule(builder.Configuration);
 builder.Services.AddSharedInfrastructure();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", p =>
+        p.WithOrigins("http://localhost:3000", "https://localhost:3000")
+         .AllowAnyHeader()
+         .AllowAnyMethod()
+    );
+});
 
 builder.Services.AddControllers().AddJsonOptions(o =>
      {
@@ -19,8 +27,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-app.MapPlanEndpoints();
+app.UseCors("Frontend");
+app.AddPlanModuleEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

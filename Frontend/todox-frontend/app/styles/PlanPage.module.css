@@ -1,0 +1,262 @@
+
+/* === PAGE LAYOUT === */
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px 22px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  /* Obsidian-ish base */
+  background: inherit;
+  color: #d7dce2; /* мягкий “почти белый” */
+}
+
+/* === PLAN HEADER === */
+.header {
+  background: #26282b;
+  border: 1px solid #222a35;
+  border-radius: 12px;
+  padding: 16px 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: #eef2f6;
+}
+
+.description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #a9b2bf;
+  max-width: 72ch;
+}
+
+/* === TASKS SECTION === */
+.section {
+  background: #26282b;
+  border: 1px solid #222a35;
+  border-radius: 12px;
+  padding: 16px 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #222a35;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #eef2f6;
+}
+
+.counter {
+  font-size: 12px;
+  color: #97a3b3;
+}
+
+/* === TASK LIST === */
+.taskList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* === TASK CARD === */
+.task {
+  background: #222a35;
+  border: 1px solid #464051;
+  border-radius: 12px;
+
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.task:hover {
+  border-color: #2b3646;
+  background: #121a22;
+}
+
+/* title + status */
+.taskHeader {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.taskTitle {
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+  color: #e8edf3;
+  word-break: break-word;
+}
+
+/* Obsidian-like pill */
+.status {
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #aeb7c4;
+
+  white-space: nowrap;
+}
+
+/* опционально: если хочешь различать done */
+.statusDone {
+  border-color: #2e5d49;
+  background: rgba(46, 93, 73, 0.18);
+  color: #bde7d2;
+}
+
+/* === META === */
+.meta {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #97a3b3;
+}
+
+/* === BLOCKS INSIDE TASK === */
+.blocks {
+  margin-top: 6px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Жёлтая подводка начала блока */
+.block {
+  padding-left: 12px;
+  border-left: 3px solid #f2c94c; /* “obsidian-ish” yellow */
+}
+
+/* === CONTENT NORMALIZATION (Obsidian typography) === */
+.block :where(p) {
+  margin: 8px 0;
+  line-height: 1.65;
+  color: #d7dce2;
+}
+
+.block :where(ul, ol) {
+  margin: 8px 0 8px 20px;
+  padding: 0;
+  color: #d7dce2;
+}
+
+.block :where(li) {
+  margin: 4px 0;
+}
+
+/* Inline code */
+.block :where(code):not(pre code) {
+  display: inline;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid #2b3646;
+
+  background: #1b2430; /* светлее основного фона */
+  color: #e8edf3;
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 12.5px;
+}
+
+/* Code blocks */
+.block :where(pre) {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+
+  border-radius: 10px;
+  border: 1px solid #2b3646;
+
+  background: #1b2430; /* светлее, чем общий фон — по требованию */
+  color: #e8edf3;
+
+  overflow-x: auto;
+  line-height: 1.55;
+}
+
+.block :where(pre code) {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 13px;
+}
+
+/* Subtle separators inside block content if needed */
+.block :where(hr) {
+  border: 0;
+  border-top: 1px solid #222a35;
+  margin: 12px 0;
+}
+
+/* Links (если у TaskBlock появляются ссылки) */
+.block :where(a) {
+  color: #8ab4ff;
+  text-decoration: none;
+}
+.block :where(a:hover) {
+  text-decoration: underline;
+}
+
+/* === RESPONSIVE === */
+@media (min-width: 640px) {
+  .page {
+    padding: 34px 26px;
+  }
+
+  .header,
+  .section {
+    padding: 18px 20px;
+  }
+
+  .task {
+    padding: 16px 16px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+}

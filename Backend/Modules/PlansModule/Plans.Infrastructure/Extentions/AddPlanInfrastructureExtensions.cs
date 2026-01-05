@@ -18,5 +18,8 @@ public static class AddPlanInfrastructureExtensions
 
         services.AddScoped<IPlanRepositoryServices, PlanRepositoryServices>();
         services.AddScoped<IPlanRepository, PlanRepository>();
+
+        services.AddScoped<ITaskRepositoryServices, TaskRepositoryServices>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
     }
 }

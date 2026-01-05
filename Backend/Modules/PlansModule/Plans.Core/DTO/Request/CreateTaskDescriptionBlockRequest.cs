@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Plans.Core.DTO.Request;
 
-public sealed class CreateTaskDescriptionBlockRequest
+public sealed class CreateTaskRequest
 {
     public Guid PlanId { get; init; }
     public string Title { get; init; } = string.Empty;

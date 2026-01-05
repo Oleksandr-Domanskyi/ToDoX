@@ -21,7 +21,7 @@ public static class TaskEntityToDtoMapper
     public static List<TaskDto> MapToDto(IEnumerable<TaskEntity> entities) =>
         entities.Select(MapToDto).ToList();
 
-    public static TaskEntity Map(CreateTaskDescriptionBlockRequest request)
+    public static TaskEntity Map(CreateTaskRequest request)
     {
         if (request is null) throw new ArgumentNullException(nameof(request));
 
@@ -59,23 +59,19 @@ public static class TaskEntityToDtoMapper
         {
             TextBlock t => new TextBlockDto
             {
-                Type = "text",
                 Content = t.Content
             },
             CheckListBlock c => new CheckListBlockDto
             {
-                Type = "checklist",
                 Items = c.Items
             },
             CodeBlock cb => new CodeBlockDto
             {
-                Type = "code",
                 CodeContent = cb.CodeContent,
                 Language = cb.Language
             },
             ImageBlock i => new ImageBlockDto
             {
-                Type = "image",
                 ImageUrl = i.ImageUrl
             },
             _ => throw new ArgumentException($"Unknown block type: {block.GetType().Name}")
