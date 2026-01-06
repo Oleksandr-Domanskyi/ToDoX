@@ -1,7 +1,7 @@
 
 /* === PAGE LAYOUT === */
 .page {
-  max-width: 920px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 28px 22px;
 
@@ -40,7 +40,7 @@
   font-size: 14px;
   line-height: 1.65;
   color: #a9b2bf;
-  max-width: 72ch;
+  max-width: 100%;
 }
 
 /* === TASKS SECTION === */

@@ -30,8 +30,9 @@ namespace Plans.API.EndPoints
                 var task = await mediator.Send(new TaskGetByIdQuery(planId, id), cancellationToken);
                 return task is null ? Results.NotFound("Task not found") : Results.Ok(task);
             });
-            endpoint.MapPost("plans/{planId}/tasks/Create", async (CreateTaskRequest request, IMediator mediator, CancellationToken cancellationToken) =>
+            endpoint.MapPost("plans/{planId}/tasks/Create", async (Guid planId, CreateTaskRequest request, IMediator mediator, CancellationToken cancellationToken) =>
             {
+                request.PlanId = planId;
                 await mediator.Send(new TaskCreateCommand(request), cancellationToken);
                 return Results.Ok($"Task was created!!!");
             });

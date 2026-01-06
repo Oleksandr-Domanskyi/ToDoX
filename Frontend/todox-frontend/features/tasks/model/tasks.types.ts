@@ -16,3 +16,4 @@ export interface UpdateTaskRequest {
   isCompleted: boolean;
   blocks: Block[];
 }
+

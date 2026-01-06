@@ -42,8 +42,10 @@ body {
 */
 
 .app_shell {
+  --sidebar-w: 280px;
+
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: var(--sidebar-w) 1fr;
 
   width: 100vw;
   height: 100vh;

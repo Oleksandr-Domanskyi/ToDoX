@@ -5,7 +5,7 @@ namespace Plans.Core.DTO.Request;
 
 public sealed class CreateTaskRequest
 {
-    public Guid PlanId { get; init; }
+    public Guid PlanId { get; set; }
     public string Title { get; init; } = string.Empty;
 
     public IReadOnlyList<CreateTaskBlockRequest> Blocks { get; init; }

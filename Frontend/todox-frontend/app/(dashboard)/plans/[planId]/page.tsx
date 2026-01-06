@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { usePlanById } from "@/features/plans/api/plans.queries";
 import { useTasksByPlan } from "@/features/tasks/api/tasks.queries";
 import { TaskBlock } from "@/shared/ui/task-block";
-import styles from "../../../styles/PlanPage.module.css";
+import styles from "../../../../styles/PlanPage.module.css";
 
 export default function PlanPage() {
   const { planId } = useParams<{ planId: string }>();
@@ -38,14 +38,14 @@ export default function PlanPage() {
         <li key={task.id} className={styles.task}>
           <div className={styles.taskHeader}>
             <div className={styles.taskTitle}>{task.title}</div>
-              <span
+              {/*<span
               className={[
                 styles.status,
                 task.isCompleted ? styles.statusDone : "",
               ].join(" ")}
             >
               {task.isCompleted ? "done" : "todo"}
-            </span>
+            </span>*/}
 
           </div>
         <div className={styles.meta}>

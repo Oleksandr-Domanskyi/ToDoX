@@ -1,0 +1,422 @@
+/* CreateTaskModal.module.css */
+
+/* === BACKDROP === */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+
+  display: grid;
+  place-items: center;
+
+  padding: 18px;
+}
+
+/* === MODAL SHELL (Obsidian-like) === */
+/* Header + Footer stay visible; only Body scrolls */
+.modal {
+  width: min(920px, 92vw);
+  max-height: 88vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #26282b;
+  border: 1px solid #222a35;
+  border-radius: 12px;
+
+  padding: 16px 18px;
+
+  color: #d7dce2;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+
+  overflow: hidden;
+}
+
+/* === HEADER === */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding-bottom: 10px;
+  border-bottom: 1px solid #222a35;
+
+  margin-bottom: 14px;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #eef2f6;
+}
+
+.closeBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+
+  background: transparent;
+  border: 1px solid #2b3646;
+  color: #aeb7c4;
+
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+
+  display: grid;
+  place-items: center;
+
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.closeBtn:hover {
+  background: #0b0f14;
+  border-color: #3a475b;
+  color: #eef2f6;
+}
+
+/* === BODY (SCROLL AREA) === */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* keeps content from touching the scrollbar */
+  padding-right: 6px;
+
+  /* allows body to actually shrink inside flex modal */
+  min-height: 0;
+}
+
+/* Optional nicer scrollbar (supported browsers only) */
+.body::-webkit-scrollbar {
+  width: 10px;
+}
+.body::-webkit-scrollbar-track {
+  background: rgba(11, 15, 20, 0.35);
+  border-radius: 999px;
+}
+.body::-webkit-scrollbar-thumb {
+  background: #2b3646;
+  border-radius: 999px;
+}
+.body::-webkit-scrollbar-thumb:hover {
+  background: #3a475b;
+}
+
+/* === LABEL + INPUT === */
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  font-size: 12px;
+  color: #97a3b3;
+}
+
+.input {
+  padding: 10px 12px;
+
+  border-radius: 10px;
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #e8edf3;
+
+  outline: none;
+  transition: border-color 120ms ease, background-color 120ms ease;
+
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input::placeholder {
+  color: #6f7c8f;
+}
+
+.input:focus {
+  border-color: #3a475b;
+  background: #0e141c;
+}
+
+/* === TOOLBAR BUTTONS (PILLS) === */
+.blockToolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.blockToolbar button {
+  font-size: 12px;
+  line-height: 1;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #aeb7c4;
+
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.blockToolbar button:hover {
+  background: rgba(46, 93, 73, 0.18);
+  border-color: #2e5d49;
+  color: #bde7d2;
+}
+
+/* === BLOCK LIST === */
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty {
+  font-size: 12px;
+  color: #97a3b3;
+  padding: 10px 12px;
+
+  border-radius: 10px;
+  border: 1px dashed #2b3646;
+  background: rgba(11, 15, 20, 0.35);
+}
+
+/* === SORTABLE ROW WRAPPER === */
+.sortableItem {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.dragHandle {
+  height: 100%;
+  min-height: 44px;
+
+  border-radius: 10px;
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #97a3b3;
+
+  display: grid;
+  place-items: center;
+
+  cursor: grab;
+  user-select: none;
+
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+
+.dragHandle:hover {
+  border-color: #3a475b;
+  background: #121a22;
+  color: #eef2f6;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.sortableContent {
+  min-width: 0;
+}
+
+/* === BLOCK CARD === */
+.blockCard {
+  background: #222a35;
+  border: 1px solid #2b3646;
+  border-radius: 12px;
+
+  padding: 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.blockCard:hover {
+  border-color: #3a475b;
+  background: #121a22;
+}
+
+.blockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.blockType {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #eef2f6;
+  text-transform: lowercase;
+}
+
+.removeBtn {
+  background: transparent;
+  border: none;
+  color: #ff6b6b;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background-color 120ms ease;
+}
+
+.removeBtn:hover {
+  background: rgba(255, 107, 107, 0.12);
+}
+
+/* === TEXTAREA === */
+/* width expands; height is resizable; optional auto-grow requires JS */
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+
+  min-height: 90px;
+  padding: 10px 12px;
+
+  border-radius: 10px;
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #e8edf3;
+
+  outline: none;
+  resize: none;         
+  overflow: hidden;      
+
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.textarea::placeholder {
+  color: #6f7c8f;
+}
+
+.textarea:focus {
+  border-color: #3a475b;
+  background: #0e141c;
+}
+
+/* === CODE WRAP (AUTO-EXPANDING COLUMNS) === */
+/* 1st col grows with content (language), 2nd fills remaining space */
+.codeWrap {
+  display: block;
+  grid-template-columns: minmax(110px, max-content) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.codeWrap input{
+  width: 30%;
+}
+
+/* allow proper shrinking inside grid */
+.codeWrap > * {
+  min-width: 0;
+}
+
+/* === ERROR === */
+.error {
+  font-size: 12px;
+  color: #ff6b6b;
+  padding: 10px 12px;
+
+  border-radius: 10px;
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+/* === FOOTER (STICKY INSIDE MODAL) === */
+.footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #222a35;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.footer button {
+  font-size: 12px;
+  line-height: 1;
+
+  padding: 8px 12px;
+  border-radius: 10px;
+
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #aeb7c4;
+
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.footer button:hover {
+  background: #121a22;
+  border-color: #3a475b;
+  color: #eef2f6;
+}
+
+.footer button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Primary action */
+.footer button:last-child {
+  border-color: #2e5d49;
+  background: rgba(46, 93, 73, 0.18);
+  color: #bde7d2;
+}
+
+.footer button:last-child:hover {
+  background: rgba(46, 93, 73, 0.28);
+  border-color: #2e5d49;
+  color: #e8fff3;
+}
+
+/* === RESPONSIVE === */
+@media (min-width: 640px) {
+  .modal {
+    padding: 18px 20px;
+  }
+}
+
+@media (max-width: 520px) {
+  .sortableItem {
+    grid-template-columns: 1fr;
+  }
+
+  .dragHandle {
+    height: 34px;
+    min-height: 34px;
+  }
+
+  .codeWrap {
+    grid-template-columns: 1fr; /* stack language + code */
+  }
+}
+
+/* Code textarea specifics */
+.codeTextarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  white-space: pre-wrap;   /* wrap long lines */
+  word-break: break-word; /* break very long tokens if needed */
+}

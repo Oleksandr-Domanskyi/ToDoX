@@ -1,6 +1,9 @@
+import "../styles/globals.css";
+
+
 import { Providers } from "./providers";
-import "./styles/globals.css";
 import { Sidebar } from "../shared/ui/sidebar";
+import { FontAwesomeLoader } from "@/shared/lib/fontawesome/FonstAwasomeLoader";
 
 export default function RootLayout({
   children,
@@ -12,6 +15,7 @@ export default function RootLayout({
       <body>
         <Providers>
           <div className="app_shell">
+            <FontAwesomeLoader />
             <Sidebar />
             <main className="app_main">
               {children}
