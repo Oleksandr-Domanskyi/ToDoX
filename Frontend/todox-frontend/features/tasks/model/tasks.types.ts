@@ -17,3 +17,12 @@ export interface UpdateTaskRequest {
   blocks: Block[];
 }
 
+export type TaskDto = {
+  id: string;
+  planId: string;
+  title: string;
+  isCompleted: boolean;
+  blocks: Block[];
+  createdAt: string;
+  updatedAt?: string | null;
+};

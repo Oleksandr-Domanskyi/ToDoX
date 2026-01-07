@@ -71,9 +71,8 @@
   letter-spacing: -0.01em;
   color: #eef2f6;
 }
-
 .counter {
-  font-size: 12px;
+  font-size: 14px;
   color: #97a3b3;
 }
 
@@ -113,6 +112,14 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 12px;
+}
+.taskHeader i {
+  color: #aea3a3;
+  font-size: 20px;
+}
+.taskHeader i:hover{
+  color: #ffffff;
+  cursor: pointer;
 }
 
 .taskTitle {

@@ -24,6 +24,7 @@ export function Sidebar() {
 
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
+  const [isResizing, setIsResizing] = useState(false);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [isCreatePlanOpen, setIsCreatePlanOpen] = useState(false);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export function Sidebar() {
     return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, n));
   });
 
-  const [isResizing, setIsResizing] = useState(false);
+
 
   useEffect(() => {
   if (typeof window === "undefined") return;
@@ -59,7 +60,7 @@ export function Sidebar() {
     const startX = e.clientX;
     const startWidth = sidebarWidth;
 
-    // Better UX during drag
+  
     document.body.style.userSelect = "none";
     document.body.style.cursor = "col-resize";
 
@@ -248,7 +249,7 @@ export function Sidebar() {
             setActivePlanId(null);
           }}
         />
-      )}
+      )};
 
       {isCreatePlanOpen && (
         <CreatePlanModal onClose={() => setIsCreatePlanOpen(false)} />

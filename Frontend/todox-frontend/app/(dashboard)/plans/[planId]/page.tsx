@@ -5,12 +5,26 @@ import { usePlanById } from "@/features/plans/api/plans.queries";
 import { useTasksByPlan } from "@/features/tasks/api/tasks.queries";
 import { TaskBlock } from "@/shared/ui/task-block";
 import styles from "../../../../styles/PlanPage.module.css";
+import { Task } from "@/features/tasks/model/tasks.types";
+import { useState } from "react";
+import { UpdateTaskModal } from "@/features/tasks/ui/UpdateTaskModal";
 
 export default function PlanPage() {
   const { planId } = useParams<{ planId: string }>();
-
   const { data: plan } = usePlanById(planId);
   const { data: tasks } = useTasksByPlan(planId);
+  const [isUpdateTaskOpen, setIsUpdateTaskOpen] = useState(false);
+  const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  
+
+  const onUpdateTask = (planId: string, taskId: string, task: Task) => {
+    setActivePlanId(planId);
+    setActiveTaskId(taskId);
+    setActiveTask(task);
+    setIsUpdateTaskOpen(true);
+  }
 
   return (
     <div className={styles.page}>
@@ -30,7 +44,7 @@ export default function PlanPage() {
   <section className={styles.section}>
     <div className={styles.sectionHeader}>
       <h2 className={styles.sectionTitle}>Tasks</h2>
-      <span className={styles.counter}>{tasks?.length} total</span>
+        <span className={styles.counter}>{tasks?.length} total</span>
     </div>
 
     <ul className={styles.taskList}>
@@ -46,7 +60,12 @@ export default function PlanPage() {
             >
               {task.isCompleted ? "done" : "todo"}
             </span>*/}
-
+            <i className="fa-regular fa-pen-to-square"
+            onClick={(e) =>{
+              e.preventDefault();
+              e.stopPropagation();
+              onUpdateTask(planId, task.id, task );
+            }}></i>
           </div>
         <div className={styles.meta}>
             Created: {new Date(task.createdAt).toLocaleString()}
@@ -66,6 +85,19 @@ export default function PlanPage() {
         </li>
       ))}
     </ul>
+    {isUpdateTaskOpen && activePlanId && activeTaskId && activeTask && (
+      <UpdateTaskModal
+        planId={activePlanId}
+        taskId={activeTaskId}
+        Task={activeTask}
+        onClose={() =>{
+          setIsUpdateTaskOpen(false);
+          setActivePlanId(null);
+          setActiveTaskId(null);
+          setActiveTask(null);
+        }}
+      />
+    )}
   </section>
 </div>
   );

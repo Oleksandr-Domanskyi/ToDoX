@@ -4,8 +4,8 @@ namespace Plans.Core.DTO;
 
 public sealed class TaskDto
 {
-    public Guid Id { get; init; }
-    public Guid PlanId { get; init; }
+    public Guid Id { get; set; }
+    public Guid PlanId { get; set; }
 
     public string Title { get; init; } = string.Empty;
     public bool IsCompleted { get; init; }
