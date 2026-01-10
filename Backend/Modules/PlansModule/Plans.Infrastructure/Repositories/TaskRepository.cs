@@ -20,7 +20,7 @@ public class TaskRepository : ITaskRepository
 
     public async Task<List<TaskEntity>> GetAllAsync(Guid planId, CancellationToken cancellationToken = default)
     {
-        return await _dbcontext.Tasks.Where(t => t.PlanId == planId).Include(t => t.Blocks).ToListAsync(cancellationToken);
+        return await _dbcontext.Tasks.Where(t => t.PlanId == planId).Include(t => t.Blocks.OrderBy(b => b.Order)).ToListAsync(cancellationToken);
     }
     public async Task<TaskEntity> GetByIdAsync(Guid planId, Guid id, CancellationToken cancellationToken = default)
     {

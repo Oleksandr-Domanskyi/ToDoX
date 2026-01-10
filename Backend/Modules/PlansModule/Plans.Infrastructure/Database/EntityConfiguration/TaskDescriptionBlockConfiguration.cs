@@ -19,6 +19,8 @@ public class TaskDescriptionBlockConfiguration : IEntityTypeConfiguration<TaskDe
             .HasValue<CodeBlock>(nameof(CodeBlock))
             .HasValue<CheckListBlock>(nameof(CheckListBlock));
 
+        builder.HasIndex(x => new { x.TaskId, x.Order });
+
 
         builder.ToTable("TaskDescriptionBlocks");
 

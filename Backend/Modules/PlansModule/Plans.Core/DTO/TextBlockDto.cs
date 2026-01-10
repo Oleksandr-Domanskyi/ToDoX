@@ -4,5 +4,5 @@ namespace Plans.Core.DTO;
 
 public class TextBlockDto : TaskDescriptionBlockDto
 {
-    public string Content { get; set; } = string.Empty;
+    public string RichTextJson { get; set; } = string.Empty;
 }

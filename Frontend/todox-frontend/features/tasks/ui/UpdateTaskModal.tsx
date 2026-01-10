@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import styles from "./UpdateTaskModal.module.css";
 
 import type { Block } from "@/shared/types/block";
 import type { Task } from "../model/tasks.types";
 import { UpdateTask } from "../api/task.api";
+import { RichTextEditor } from "@/shared/ui/RichTextEditor";
 
 import {
   DndContext,
@@ -25,7 +26,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// DTO под твой backend TaskDto (минимум нужного)
+
 type TaskDtoPayload = {
   id: string;
   planId: string;
@@ -48,27 +49,86 @@ type UiBlock = {
   data: Block;
 };
 
-function makeClientId() {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `b_${Math.random().toString(16).slice(2)}_${Date.now()}`;
-}
 
-/**
- * Auto-resize textarea height to fit its content.
- * No internal scrollbars; modal body handles overflow.
- */
+
 function autoGrow(el: HTMLTextAreaElement) {
   el.style.height = "0px";
   el.style.height = `${el.scrollHeight}px`;
 }
 
-export function UpdateTaskModal({ planId, taskId, Task, onClose }: Props) {
-  const [title, setTitle] = useState(() => Task.title ?? "");
-  const [isCompleted, setIsCompleted] = useState(() => !!Task.isCompleted);
+function makeClientId() {
+  return crypto.randomUUID();
+}
 
-  // UI blocks with stable ids for DnD (важно: НЕ индекс)
-  const [blocks, setBlocks] = useState<UiBlock[]>(() =>
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function plainTextToTipTapJson(text: string): string {
+  const doc = {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: text ? [{ type: "text", text }] : [],
+      },
+    ],
+  };
+  return JSON.stringify(doc);
+}
+
+function tiptapJsonToPlainText(jsonStr: string): string {
+  const raw = (jsonStr ?? "").trim();
+  if (!raw) return "";
+
+  if (!(raw.startsWith("{") || raw.startsWith("["))) return raw;
+
+  try {
+    const doc: unknown = JSON.parse(raw);
+    const out: string[] = [];
+
+    const walk = (node: unknown) => {
+      if (!node) return;
+      if (!isRecord(node)) return;
+
+      const type = typeof node.type === "string" ? node.type : "";
+      const text = typeof node.text === "string" ? node.text : "";
+
+      if (type === "text" && text) out.push(text);
+
+      const content = node.content;
+      if (Array.isArray(content)) {
+        for (const child of content) walk(child);
+
+        if (type === "paragraph" || type === "heading" || type === "listItem") {
+          out.push("\n");
+        }
+      }
+    };
+
+    walk(doc);
+
+    return out.join("").replace(/\n{3,}/g, "\n\n").trim();
+  } catch {
+    return raw;
+  }
+}
+
+
+function renumberOrders(list: UiBlock[]): UiBlock[] {
+  return list.map((x, idx) => ({
+    ...x,
+    data: { ...x.data, order: idx },
+  }));
+}
+
+
+export function UpdateTaskModal({ planId, taskId, Task, onClose }: Props) {
+  const [title, setTitle] = useState(Task.title ?? "");
+  const [isCompleted, setIsCompleted] = useState(!!Task.isCompleted);
+
+
+  const [blocks, setBlocks] = useState<UiBlock[]>(
     (Task.blocks ?? []).map((b) => ({ clientId: makeClientId(), data: b }))
   );
 
@@ -86,56 +146,86 @@ export function UpdateTaskModal({ planId, taskId, Task, onClose }: Props) {
     return Task.updatedAt ? new Date(Task.updatedAt).toLocaleString() : "N/A";
   }, [Task.updatedAt]);
 
-  const addBlock = (type: Block["type"]) => {
-    const data: Block =
-      type === "text"
-        ? { type: "text", content: "" }
-        : type === "image"
-          ? { type: "image", imageUrl: "" }
-          : type === "checklist"
-            ? { type: "checklist", items: [] }
-            : { type: "code", codeContent: "", language: "ts" };
+  const richUi = useMemo(
+    () => ({
+      toolbarClassName: styles.richToolbar,
+      buttonClassName: styles.richBtn,
+      surfaceClassName: styles.richSurface,
+      contentClassName: styles.richContent,
+      placeholderClassName: styles.richPlaceholder,
+    }),
+    []
+  );
 
-    setBlocks((prev) => [...prev, { clientId: makeClientId(), data }]);
+  const addBlock = (type: Block["type"]) => {
+    setBlocks((prev) => {
+
+      const order = prev.length;
+
+      const block: Block =
+        type === "text"
+          ? { type: "text", richTextJson: plainTextToTipTapJson(""), order }
+          : type === "image"
+          ? {
+              type: "image",
+              imageUrl: "",
+              captionRichTextJson: plainTextToTipTapJson(""),
+              order,
+            }
+          : type === "checklist"
+          ? { type: "checklist", items: [], order }
+          : { type: "code", codeContent: "", language: "ts", order };
+
+
+
+      return [...prev, { clientId: makeClientId(), data: block }];
+    });
   };
 
-  const updateBlock = (clientId: string, next: Block) => {
+  const updateBlock = (id: string, next: Block) => {
     setBlocks((prev) =>
-      prev.map((b) => (b.clientId === clientId ? { ...b, data: next } : b))
+      prev.map((b) => (b.clientId === id ? { ...b, data: next } : b))
     );
   };
 
-  const removeBlock = (clientId: string) => {
-    setBlocks((prev) => prev.filter((b) => b.clientId !== clientId));
+  const removeBlock = (id: string) => {
+    setBlocks((prev) => {
+      const filtered = prev.filter((b) => b.clientId !== id);
+      return renumberOrders(filtered);
+    });
   };
 
-  const onDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  const onDragEnd = (e: DragEndEvent) => {
+    if (!e.over || e.active.id === e.over.id) return;
 
     setBlocks((prev) => {
-      const oldIndex = prev.findIndex((b) => b.clientId === active.id);
-      const newIndex = prev.findIndex((b) => b.clientId === over.id);
-      if (oldIndex < 0 || newIndex < 0) return prev;
-      return arrayMove(prev, oldIndex, newIndex);
+      const from = prev.findIndex((b) => b.clientId === e.active.id);
+      const to = prev.findIndex((b) => b.clientId === e.over!.id);
+      if (from < 0 || to < 0) return prev;
+
+      const moved = arrayMove(prev, from, to);
+
+
+      return renumberOrders(moved);
     });
   };
 
   const submit = async () => {
     setError(null);
 
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setError("Please enter a task title.");
+    if (!title.trim()) {
+      setError("Title is required");
       return;
     }
+
+    const blocksNormalized = renumberOrders(blocks).map((b) => b.data);
 
     const payload: TaskDtoPayload = {
       id: taskId,
       planId,
-      title: trimmedTitle,
+      title: title.trim(),
       isCompleted,
-      blocks: blocks.map((b) => b.data),
+      blocks: blocksNormalized,
       createdAt: Task.createdAt,
       updatedAt: Task.updatedAt ?? null,
     };
@@ -146,7 +236,7 @@ export function UpdateTaskModal({ planId, taskId, Task, onClose }: Props) {
       onClose();
     } catch (e) {
       console.error(e);
-      setError("Failed to update task. Please try again.");
+      setError("Failed to update task");
     } finally {
       setIsSubmitting(false);
     }
@@ -210,27 +300,24 @@ export function UpdateTaskModal({ planId, taskId, Task, onClose }: Props) {
           </div>
 
           <div className={styles.blocks}>
-            {blocks.length === 0 ? (
-              <div className={styles.empty}>Add blocks if needed (optional).</div>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={onDragEnd}
-              >
-                <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-                  {blocks.map((b) => (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+                {blocks.length === 0 ? (
+                  <div className={styles.empty}>Add blocks if needed (optional).</div>
+                ) : (
+                  blocks.map((b) => (
                     <SortableBlockItem
                       key={b.clientId}
                       id={b.clientId}
                       block={b.data}
                       onChange={(next) => updateBlock(b.clientId, next)}
                       onRemove={() => removeBlock(b.clientId)}
+                      richUi={richUi}
                     />
-                  ))}
-                </SortableContext>
-              </DndContext>
-            )}
+                  ))
+                )}
+              </SortableContext>
+            </DndContext>
           </div>
 
           {error && <div className={styles.error}>{error}</div>}
@@ -249,115 +336,195 @@ export function UpdateTaskModal({ planId, taskId, Task, onClose }: Props) {
   );
 }
 
-/** Sortable wrapper (adds drag handle + transforms) */
+
 function SortableBlockItem({
   id,
   block,
   onChange,
   onRemove,
+  richUi,
 }: {
   id: string;
   block: Block;
   onChange: (b: Block) => void;
   onRemove: () => void;
+  richUi: {
+    toolbarClassName: string;
+    buttonClassName: string;
+    surfaceClassName: string;
+    contentClassName: string;
+    placeholderClassName: string;
+  };
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id });
+  const { setNodeRef, transform, transition, attributes, listeners, isDragging } = useSortable({
+    id,
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.7 : 1,
+    opacity: isDragging ? 0.75 : 1,
   };
 
   return (
     <div ref={setNodeRef} style={style} className={styles.sortableItem}>
-      <div
-        className={styles.dragHandle}
-        {...attributes}
-        {...listeners}
-        title="Drag to reorder"
-      >
+      <div className={styles.dragHandle} {...attributes} {...listeners} title="Drag to reorder">
         ⋮⋮
       </div>
 
       <div className={styles.sortableContent}>
-        <BlockEditor block={block} onChange={onChange} onRemove={onRemove} />
+        <div className={styles.blockCard}>
+          <div className={styles.blockHeader}>
+            <div className={styles.blockType}>{block.type}</div>
+            <button type="button" className={styles.removeBtn} onClick={onRemove}>
+              Remove
+            </button>
+          </div>
+
+          <BlockEditor block={block} onChange={onChange} richUi={richUi} />
+        </div>
       </div>
     </div>
   );
 }
 
+
 function BlockEditor({
   block,
   onChange,
-  onRemove,
+  richUi,
 }: {
   block: Block;
   onChange: (b: Block) => void;
-  onRemove: () => void;
+  richUi: {
+    toolbarClassName: string;
+    buttonClassName: string;
+    surfaceClassName: string;
+    contentClassName: string;
+    placeholderClassName: string;
+  };
 }) {
-  return (
-    <div className={styles.blockCard}>
-      <div className={styles.blockHeader}>
-        <div className={styles.blockType}>{block.type}</div>
-        <button type="button" className={styles.removeBtn} onClick={onRemove}>
-          Remove
-        </button>
-      </div>
+  const codeRef = useRef<HTMLTextAreaElement | null>(null);
 
-      {block.type === "text" && (
-        <textarea
-          className={styles.textarea}
-          value={block.content}
-          onChange={(e) => onChange({ ...block, content: e.target.value })}
-          onInput={(e) => autoGrow(e.currentTarget)}
-          placeholder="Text..."
-        />
-      )}
+  const growKey = useMemo(() => {
+    if (block.type === "code") return block.codeContent;
+    return "";
+  }, [block]);
 
-      {block.type === "image" && (
+  useLayoutEffect(() => {
+    if (block.type !== "code") return;
+    if (!codeRef.current) return;
+    autoGrow(codeRef.current);
+  }, [block.type, growKey]);
+
+  if (block.type === "text") {
+    return (
+      <RichTextEditor
+        value={block.richTextJson}
+        onChange={(v) => onChange({ ...block, richTextJson: v })}
+        placeholder="Write text..."
+        ui={richUi}
+      />
+    );
+  }
+
+  if (block.type === "image") {
+    return (
+      <>
         <input
           className={styles.input}
           value={block.imageUrl}
           onChange={(e) => onChange({ ...block, imageUrl: e.target.value })}
           placeholder="https://..."
         />
-      )}
 
-      {block.type === "checklist" && (
-        <textarea
-          className={styles.textarea}
-          value={block.items.join("\n")}
-          onChange={(e) =>
+        <RichTextEditor
+          value={block.captionRichTextJson ?? ""}
+          onChange={(v) => onChange({ ...block, captionRichTextJson: v })}
+          placeholder="Caption..."
+          ui={richUi}
+        />
+      </>
+    );
+  }
+
+  if (block.type === "checklist") {
+    return (
+      <div className={styles.checklist}>
+        {block.items.map((item, idx) => (
+          <div key={idx} className={styles.checklistRow}>
+            <input
+              type="checkbox"
+              checked={item.done}
+              onChange={(e) => {
+                const items = [...block.items];
+                items[idx] = { ...items[idx], done: e.target.checked };
+                onChange({ ...block, items });
+              }}
+            />
+
+            <input
+              className={styles.checklistInput}
+              value={tiptapJsonToPlainText(item.richTextJson)}
+              placeholder="Checklist item..."
+              onChange={(e) => {
+                const items = [...block.items];
+                items[idx] = {
+                  ...items[idx],
+                  richTextJson: plainTextToTipTapJson(e.target.value),
+                };
+                onChange({ ...block, items });
+              }}
+            />
+
+            <button
+              type="button"
+              className={styles.checklistRemove}
+              onClick={() => {
+                const items = block.items.filter((_, i) => i !== idx);
+                onChange({ ...block, items });
+              }}
+              aria-label="Remove item"
+              title="Remove item"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          className={styles.addItemBtn}
+          onClick={() =>
             onChange({
               ...block,
-              // Preserve user input while typing (including empty lines)
-              items: e.target.value.split("\n"),
+              items: [...block.items, { richTextJson: plainTextToTipTapJson(""), done: false }],
             })
           }
-          onInput={(e) => autoGrow(e.currentTarget)}
-          placeholder={"Each item on a new line\nExample:\nBuy milk\nMake a call"}
-        />
-      )}
+        >
+          + Item
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className={styles.codeWrap}>
+      <input
+        className={styles.input}
+        value={block.language}
+        onChange={(e) => onChange({ ...block, language: e.target.value })}
+        placeholder="Language (js / ts / csharp...)"
+      />
 
-      {block.type === "code" && (
-        <div className={styles.codeWrap}>
-          <input
-            className={styles.input}
-            value={block.language}
-            onChange={(e) => onChange({ ...block, language: e.target.value })}
-            placeholder="Language (js / ts / python...)"
-          />
-          <textarea
-            className={`${styles.textarea} ${styles.codeTextarea}`}
-            value={block.codeContent}
-            onChange={(e) => onChange({ ...block, codeContent: e.target.value })}
-            onInput={(e) => autoGrow(e.currentTarget)}
-            placeholder="Code content..."
-          />
-        </div>
-      )}
+      <textarea
+        ref={codeRef}
+        className={`${styles.textarea} ${styles.codeTextarea}`}
+        value={block.codeContent}
+        onChange={(e) => onChange({ ...block, codeContent: e.target.value })}
+        onInput={(e) => autoGrow(e.currentTarget)}
+        placeholder="Code..."
+        spellCheck={false}
+      />
     </div>
   );
 }

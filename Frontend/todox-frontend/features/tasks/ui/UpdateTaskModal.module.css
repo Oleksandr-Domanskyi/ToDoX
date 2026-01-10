@@ -464,3 +464,225 @@
 
 }
 }
+
+/* ============================
+   Rich Text (TipTap / ProseMirror)
+============================ */
+
+.richToolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.richBtn {
+  font-size: 12px;
+  line-height: 1;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #aeb7c4;
+
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.richBtn:hover {
+  background: #121a22;
+  border-color: #3a475b;
+  color: #eef2f6;
+}
+
+.richBtn[data-active="true"] {
+  border-color: #2e5d49;
+  background: rgba(46, 93, 73, 0.18);
+  color: #bde7d2;
+}
+
+.richSurface {
+  width: 100%;
+  box-sizing: border-box;
+
+  min-height: 90px;
+  padding: 10px 12px;
+
+  border-radius: 10px;
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #e8edf3;
+
+  position: relative;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.richSurface:focus-within {
+  border-color: #3a475b;
+  background: #0e141c;
+}
+
+/* TipTap internal element */
+.richContent :global(.ProseMirror) {
+  outline: none;
+  min-height: 70px;
+
+  color: inherit;
+  font: inherit;
+  line-height: 1.55;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* reset default margins */
+.richContent :global(.ProseMirror p) {
+  margin: 0;
+}
+.richContent :global(.ProseMirror ul),
+.richContent :global(.ProseMirror ol) {
+  margin: 0;
+  padding-left: 18px;
+}
+.richContent :global(.ProseMirror li) {
+  margin: 0;
+}
+
+/* selection */
+.richContent :global(.ProseMirror ::selection) {
+  background: rgba(138, 180, 255, 0.25);
+}
+
+.richPlaceholder {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+
+  color: #6f7c8f;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ============================
+   Checklist layout
+============================ */
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklistItem {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.checklistItem input[type="checkbox"] {
+  margin-top: 10px;
+}
+
+.checklistEditor {
+  min-width: 0;
+}
+
+.addItemBtn {
+  align-self: flex-start;
+
+  font-size: 12px;
+  line-height: 1;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #aeb7c4;
+
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.addItemBtn:hover {
+  background: rgba(46, 93, 73, 0.18);
+  border-color: #2e5d49;
+  color: #bde7d2;
+}
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checklistRow {
+  display: grid;
+  grid-template-columns: 18px 1fr 28px;
+  gap: 10px;
+  align-items: center;
+}
+
+.checklistInput {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #e8edf3;
+
+  outline: none;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.checklistInput:focus {
+  border-color: #3a475b;
+  background: #0e141c;
+}
+
+.checklistRemove {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+
+  border: 1px solid #2b3646;
+  background: transparent;
+  color: #ff6b6b;
+
+  cursor: pointer;
+}
+
+.checklistRemove:hover {
+  background: rgba(255, 107, 107, 0.12);
+}
+
+.ProseMirror pre {
+  background: #0b0f14;
+  border: 1px solid #2b3646;
+  border-radius: 10px;
+  padding: 12px 14px;
+
+  overflow: hidden;     
+  white-space: pre-wrap;  
+  word-break: break-word;
+
+  line-height: 1.45;
+}
+
+.ProseMirror pre code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+}
+
+.hljs-comment { color: #8b949e; }
+.hljs-keyword { color: #ff7b72; }
+.hljs-string { color: #a5d6ff; }
+.hljs-title,
+.hljs-function { color: #d2a8ff; }
+.hljs-number { color: #79c0ff; }
+.hljs-built_in { color: #ffa657; }
+.hljs-type { color: #7ee787; }

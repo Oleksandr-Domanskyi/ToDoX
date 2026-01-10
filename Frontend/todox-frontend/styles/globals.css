@@ -54,6 +54,7 @@ body {
   overflow: hidden;
 }
 
+
 /* Sidebar column */
 aside {
   height: 100vh;
@@ -77,3 +78,27 @@ aside {
 *::after {
   box-sizing: border-box;
 }
+
+/* highlight.js simple dark theme */
+.hljs-comment { color: #8b949e; }
+.hljs-quote { color: #8b949e; }
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal { color: #ff7b72; }
+
+.hljs-string,
+.hljs-doctag { color: #a5d6ff; }
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id { color: #d2a8ff; }
+
+.hljs-number { color: #79c0ff; }
+
+.hljs-built_in,
+.hljs-type { color: #ffa657; }
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-name { color: #7ee787; }

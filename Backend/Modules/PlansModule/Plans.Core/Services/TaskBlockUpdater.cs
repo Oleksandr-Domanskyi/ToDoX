@@ -1,5 +1,6 @@
 using System;
 using Plans.Core.DTO;
+using Plans.Core.Entity.Tasks.DescriptionContent.Blocks;
 using ToDoX.Core.Entity;
 
 namespace Plans.Core.Services;
@@ -23,19 +24,24 @@ public static class TaskBlockUpdater
         switch (dto)
         {
             case TextBlockDto t:
-                task.AddTextBlock(t.Content);
+                task.AddTextBlock(t.RichTextJson, t.Order);
                 break;
 
             case ImageBlockDto i:
-                task.AddImageBlock(i.ImageUrl);
+                task.AddImageBlock(i.ImageUrl, i.CaptionRichTextJson, i.Order);
                 break;
 
             case CheckListBlockDto c:
-                task.AddCheckListBlock(c.Items);
+                var checklistItems = c.Items.Select(i => new ChecklistElements
+                {
+                    RichTextJson = i.RichTextJson,
+                    Done = i.Done
+                }).ToList();
+                task.AddCheckListBlock(checklistItems, c.Order);
                 break;
 
             case CodeBlockDto cb:
-                task.AddCodeBlock(cb.CodeContent, cb.Language);
+                task.AddCodeBlock(cb.CodeContent, cb.Language, cb.Order);
                 break;
 
             default:

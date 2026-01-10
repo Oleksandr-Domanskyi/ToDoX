@@ -1,5 +1,36 @@
-export type Block =
-  | { type: "text"; content: string }
-  | { type: "image"; imageUrl: string }
-  | { type: "checklist"; items: string[] }
-  | { type: "code"; codeContent: string; language: string };
+// shared/types/block.ts
+
+export type ChecklistItem = {
+  richTextJson: string;
+  done: boolean;
+};
+
+type BaseBlock = {
+  type: "text" | "image" | "checklist" | "code";
+  order: number;
+};
+
+export type TextBlock = BaseBlock & {
+  type: "text";
+  richTextJson: string;
+};
+
+export type ImageBlock = BaseBlock & {
+  type: "image";
+  imageUrl: string;
+  captionRichTextJson?: string;
+};
+
+export type ChecklistBlock = BaseBlock & {
+  type: "checklist";
+  items: ChecklistItem[];
+};
+
+export type CodeBlock = BaseBlock & {
+  type: "code";
+  codeContent: string;
+  language: string;
+};
+
+export type Block = TextBlock | ImageBlock | ChecklistBlock | CodeBlock;
+

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,6 +17,7 @@ type SortDir = "asc" | "desc";
 const MIN_WIDTH = 220;
 const MAX_WIDTH = 520;
 const STORAGE_KEY = "sidebar-width";
+const DEFAULT_WIDTH = 280;
 
 export function Sidebar() {
   const { data: plans, isLoading, error } = usePlans();
@@ -29,27 +30,29 @@ export function Sidebar() {
   const [isCreatePlanOpen, setIsCreatePlanOpen] = useState(false);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
 
-  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
-    if (typeof window === "undefined") return 280;
+  const [sidebarWidth, setSidebarWidth] = useState<number>(DEFAULT_WIDTH);
 
+  useLayoutEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    const n = saved ? Number(saved) : 280;
+    const n = saved ? Number(saved) : DEFAULT_WIDTH;
 
-    if (!Number.isFinite(n)) return 280;
-    return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, n));
-  });
+    const clamped = Number.isFinite(n)
+      ? Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, n))
+      : DEFAULT_WIDTH;
 
-
+    if (clamped !== sidebarWidth) {
+      setSidebarWidth(clamped);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-  if (typeof window === "undefined") return;
+    const shell = document.querySelector<HTMLElement>(".app_shell");
+    if (!shell) return;
 
-  const shell = document.querySelector<HTMLElement>(".app_shell");
-  if (!shell) return;
-
-  shell.style.setProperty("--sidebar-w", `${sidebarWidth}px`);
-}, [sidebarWidth]);
-
+    shell.style.setProperty("--sidebar-w", `${sidebarWidth}px`);
+    window.localStorage.setItem(STORAGE_KEY, String(sidebarWidth));
+  }, [sidebarWidth]);
 
   const onResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -60,7 +63,6 @@ export function Sidebar() {
     const startX = e.clientX;
     const startWidth = sidebarWidth;
 
-  
     document.body.style.userSelect = "none";
     document.body.style.cursor = "col-resize";
 
@@ -143,9 +145,9 @@ export function Sidebar() {
                       title="Add task"
                       role="button"
                       tabIndex={0}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                      onClick={(ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
                         onAddTask(planId);
                       }}
                     />
@@ -154,9 +156,9 @@ export function Sidebar() {
                       title="Edit plan"
                       role="button"
                       tabIndex={0}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                      onClick={(ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
                         onEditPlan(planId);
                       }}
                     />
@@ -165,9 +167,9 @@ export function Sidebar() {
                       title="Delete plan"
                       role="button"
                       tabIndex={0}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                      onClick={(ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
                         onDeletePlan(planId);
                       }}
                     />
@@ -185,7 +187,6 @@ export function Sidebar() {
     <aside
       className={styles.sidebar}
       aria-label="Plans sidebar"
-      style={{ width: sidebarWidth }}
       data-resizing={isResizing ? "true" : "false"}
     >
       <header className={styles.header}>
@@ -249,7 +250,7 @@ export function Sidebar() {
             setActivePlanId(null);
           }}
         />
-      )};
+      )}
 
       {isCreatePlanOpen && (
         <CreatePlanModal onClose={() => setIsCreatePlanOpen(false)} />

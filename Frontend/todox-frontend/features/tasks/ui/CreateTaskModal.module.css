@@ -420,3 +420,133 @@
   white-space: pre-wrap;   /* wrap long lines */
   word-break: break-word; /* break very long tokens if needed */
 }
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checklistRow {
+  display: grid;
+  grid-template-columns: 18px 1fr 28px;
+  gap: 10px;
+  align-items: center;
+}
+
+.checklistInput {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #e8edf3;
+
+  outline: none;
+}
+
+.checklistRemove {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+
+  border: 1px solid #2b3646;
+  background: transparent;
+  color: #ff6b6b;
+
+  cursor: pointer;
+}
+
+.checklistRemove:hover {
+  background: rgba(255, 107, 107, 0.12);
+}
+
+.addItemBtn {
+  align-self: flex-start;
+
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 999px;
+
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #aeb7c4;
+
+  cursor: pointer;
+}
+
+
+/* ===== RichText (same as Update) ===== */
+
+.richToolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.richBtn {
+  font-size: 12px;
+  line-height: 1;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #aeb7c4;
+
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.richBtn:hover {
+  background: rgba(46, 93, 73, 0.18);
+  border-color: #2e5d49;
+  color: #bde7d2;
+}
+
+/* surface вокруг редактора */
+.richSurface {
+  width: 100%;
+  box-sizing: border-box;
+
+  min-height: 90px;
+  padding: 10px 12px;
+
+  border-radius: 10px;
+  border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #e8edf3;
+
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.richSurface:focus-within {
+  border-color: #3a475b;
+  background: #0e141c;
+}
+
+/* сам контент (ProseMirror) */
+.richContent {
+  outline: none;
+  min-height: 70px;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* плейсхолдер */
+.richPlaceholder {
+  color: #6f7c8f;
+}
+
+/* убираем дефолтную рамку/выделение, если оно лезет */
+.richContent :global(.ProseMirror) {
+  outline: none;
+}
+
+.richContent :global(.ProseMirror p) {
+  margin: 0;
+}

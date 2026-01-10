@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Plans.Core.Entity.Tasks.DescriptionContent.Blocks;
 
 namespace ToDoX.Core.Entity;
 
@@ -33,82 +34,33 @@ public class TaskEntity : Entity<Guid>
         Touch();
     }
 
-    public void AddCheckListBlock(List<string> content)
+    public void AddCheckListBlock(List<ChecklistElements> content, int Order)
     {
-        _blocks.Add(new CheckListBlock(Id, content));
+        _blocks.Add(new CheckListBlock(Id, content, Order));
         Touch();
     }
-    public void AddTextBlock(string content)
+    public void AddTextBlock(string textJson, int Order)
     {
-        _blocks.Add(new TextBlock(Id, content));
+        _blocks.Add(new TextBlock(Id, textJson, Order));
         Touch();
     }
-    public void AddImageBlock(string imageUrl)
+    public void AddImageBlock(string imageUrl, string captionRichTextJson, int Order)
     {
-        _blocks.Add(new ImageBlock(Id, imageUrl));
+        _blocks.Add(new ImageBlock(Id, imageUrl, captionRichTextJson, Order));
         Touch();
     }
-    public void AddCodeBlock(string codeContent, string language)
+    public void AddCodeBlock(string codeContent, string language, int Order)
     {
-        _blocks.Add(new CodeBlock(Id, codeContent, language));
+        _blocks.Add(new CodeBlock(Id, codeContent, language, Order));
         Touch();
     }
     private void Touch() => UpdatedAt = DateTime.UtcNow;
 
-    public void ClearBlocks()
-    {
-        _blocks.Clear();
-        Touch();
-    }
 
     public void RemoveBlockAt(int index)
     {
         EnsureIndex(index);
         _blocks.RemoveAt(index);
-        Touch();
-    }
-
-    public void ReplaceTextBlock(int index, string newContent)
-    {
-        EnsureIndex(index);
-
-        if (_blocks[index] is not TextBlock)
-            throw new InvalidOperationException("Block at index is not a TextBlock.");
-
-        _blocks[index] = new TextBlock(Id, newContent);
-        Touch();
-    }
-
-    public void ReplaceImageBlock(int index, string newUrl)
-    {
-        EnsureIndex(index);
-
-        if (_blocks[index] is not ImageBlock)
-            throw new InvalidOperationException("Block at index is not an ImageBlock.");
-
-        _blocks[index] = new ImageBlock(Id, newUrl);
-        Touch();
-    }
-
-    public void ReplaceChecklistBlock(int index, List<string> items)
-    {
-        EnsureIndex(index);
-
-        if (_blocks[index] is not CheckListBlock)
-            throw new InvalidOperationException("Block at index is not a CheckListBlock.");
-
-        _blocks[index] = new CheckListBlock(Id, items);
-        Touch();
-    }
-
-    public void ReplaceCodeBlock(int index, string codeContent, string language)
-    {
-        EnsureIndex(index);
-
-        if (_blocks[index] is not CodeBlock)
-            throw new InvalidOperationException("Block at index is not a CodeBlock.");
-
-        _blocks[index] = new CodeBlock(Id, codeContent, language);
         Touch();
     }
 

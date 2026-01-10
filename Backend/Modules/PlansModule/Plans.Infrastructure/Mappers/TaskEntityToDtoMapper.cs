@@ -1,6 +1,7 @@
 using System;
 using Plans.Core.DTO;
 using Plans.Core.DTO.Request;
+using Plans.Core.Entity.Tasks.DescriptionContent.Blocks;
 using ToDoX.Core.Entity;
 
 namespace Plans.Infrastructure.Mappers;
@@ -24,7 +25,6 @@ public static class TaskEntityToDtoMapper
     public static TaskEntity Map(CreateTaskRequest request)
     {
         if (request is null) throw new ArgumentNullException(nameof(request));
-
         var task = new TaskEntity(request.Title, request.PlanId);
 
         foreach (var block in request.Blocks)
@@ -32,19 +32,25 @@ public static class TaskEntityToDtoMapper
             switch (block)
             {
                 case CreateTextBlockRequest t:
-                    task.AddTextBlock(t.Content);
+                    task.AddTextBlock(t.RichTextJson, t.Order);
                     break;
 
                 case CreateImageBlockRequest i:
-                    task.AddImageBlock(i.ImageUrl);
+                    task.AddImageBlock(i.ImageUrl, i.CaptionRichTextJson, i.Order);
                     break;
 
                 case CreateChecklistBlockRequest c:
-                    task.AddCheckListBlock(c.Items);
+                    var checklistItems = c.Items.Select(i => new ChecklistElements
+                    {
+                        RichTextJson = i.RichTextJson,
+                        Done = i.Done
+                    }).ToList();
+
+                    task.AddCheckListBlock(checklistItems, c.Order);
                     break;
 
                 case CreateCodeBlockRequest cb:
-                    task.AddCodeBlock(cb.CodeContent, cb.Language);
+                    task.AddCodeBlock(cb.CodeContent, cb.Language, cb.Order);
                     break;
 
                 default:
@@ -59,11 +65,15 @@ public static class TaskEntityToDtoMapper
         {
             TextBlock t => new TextBlockDto
             {
-                Content = t.Content
+                RichTextJson = t.RichTextJson
             },
             CheckListBlock c => new CheckListBlockDto
             {
-                Items = c.Items
+                Items = c.Items.Select(i => new ChecklistItemDto
+                {
+                    RichTextJson = i.RichTextJson,
+                    Done = i.Done
+                }).ToList()
             },
             CodeBlock cb => new CodeBlockDto
             {

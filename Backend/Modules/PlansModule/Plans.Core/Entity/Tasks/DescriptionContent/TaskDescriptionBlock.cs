@@ -6,7 +6,13 @@ public abstract class TaskDescriptionBlock
 {
     public Guid Id { get; private set; }
     public Guid TaskId { get; private set; }
-    protected TaskDescriptionBlock(Guid taskId) => TaskId = taskId;
+    public int Order { get; private set; }
+    protected TaskDescriptionBlock(Guid taskId, int order)
+    {
+        TaskId = taskId;
+        Order = order;
+    }
+
     protected TaskDescriptionBlock() { }
 
 }

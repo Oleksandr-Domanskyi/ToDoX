@@ -1,112 +1,157 @@
-import { Block } from "@/shared/types/block";
-import { useLayoutEffect, useMemo, useRef } from "react";
+"use client";
+
+import React from "react";
+
+import type { Block } from "@/shared/types/block";
 import styles from "../../features/tasks/ui/UpdateTaskModal.module.css";
+import { RichTextEditor } from "@/shared/ui/RichTextEditor";
+import { RichTextViewer } from "./RichTextViewer";
+import { CodeViewer } from "./CodeViewer";
+
+
+
+const richUi = {
+  toolbarClassName: styles.richToolbar,
+  buttonClassName: styles.richBtn,
+  surfaceClassName: styles.richSurface,
+  contentClassName: styles.richContent,
+  placeholderClassName: styles.richPlaceholder,
+};
+
 
 interface Props {
   block: Block;
 }
 
-export function TaskBlock({ block }: Props) {
 
+export function TaskBlock({ block }: Props) {
   switch (block.type) {
     case "text":
-      return <p className="whitespace-pre-wrap">{block.content}</p>;
+      return <RichTextViewer value={block.richTextJson} />;
 
     case "image":
       return (
-        <img
-          src={block.imageUrl}
-          alt=""
-          className="max-w-full rounded-md"
-        />
+        <div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={block.imageUrl}
+            alt=""
+            style={{ width: "100%", height: "auto", borderRadius: 10, display: "block" }}
+          />
+          {!!block.captionRichTextJson && (
+            <div style={{ marginTop: 8 }}>
+              <RichTextViewer value={block.captionRichTextJson} />
+            </div>
+          )}
+        </div>
       );
 
     case "checklist":
       return (
-        <ul className="list-disc pl-5 space-y-1">
+        <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 8 }}>
           {block.items.map((item, i) => (
-            <li key={i}>{item}</li>
+            <li
+              key={i}
+              style={{
+                opacity: item.done ? 0.65 : 1,
+                textDecoration: item.done ? "line-through" : "none",
+              }}
+            >
+              <RichTextViewer value={item.richTextJson} />
+            </li>
           ))}
         </ul>
       );
 
     case "code":
-      return (
-        <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
-          <code>{block.codeContent}</code>
-        </pre>
-      );
+      return <CodeViewer code={block.codeContent} language={block.language} />;
 
     default:
       return null;
   }
 }
-
-
 type UpdateProps = {
   block: Block;
   onChange: (next: Block) => void;
 };
+
+
 export function UpdateTaskBlock({ block, onChange }: UpdateProps) {
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const valueKey = useMemo(() => {
-    switch (block.type) {
-      case "text":
-        return block.content;
-      case "checklist":
-        return block.items.join("\n");
-      case "code":
-        return block.codeContent;
-      default:
-        return "";
-    }
-  }, [block]);
-
-  useLayoutEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-
-    el.style.height = "0px";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [valueKey]);
-
   switch (block.type) {
     case "text":
       return (
-        <textarea
-          ref={textareaRef}
-          className={styles.textarea}
-          value={block.content}
-          placeholder="Write text..."
-          onChange={(e) => onChange({ type: "text", content: e.target.value })}
-        />
+       <RichTextEditor
+        value={block.richTextJson}
+        onChange={(v) => onChange({ ...block, richTextJson: v })}
+        placeholder="Write text..."
+        ui={richUi}
+      />
       );
 
     case "image":
       return (
-        <input
-          className={styles.input}
-          value={block.imageUrl}
-          placeholder="https://..."
-          onChange={(e) => onChange({ type: "image", imageUrl: e.target.value })}
-        />
+        <>
+          <input
+            className={styles.input}
+            value={block.imageUrl}
+            placeholder="https://..."
+            onChange={(e) => onChange({ ...block, imageUrl: e.target.value })}
+          />
+
+          {"captionRichTextJson" in block ? (
+            <RichTextEditor
+              value={block.captionRichTextJson ?? ""}
+              onChange={(v) => onChange({ ...block, captionRichTextJson: v })}
+              placeholder="Caption..."
+              ui={richUi}
+            />
+          ) : null}
+        </>
       );
 
     case "checklist":
       return (
-        <textarea
-          ref={textareaRef}
-          className={styles.textarea}
-          value={block.items.join("\n")}
-          placeholder={`Each item on a new line\nExample:\nBuy milk\nMake a call`}
-          onChange={(e) =>
-            onChange({
-              type: "checklist",
-              items: e.target.value.split("\n"),
-            })
-          }
-        />
+        <div className={styles.checklist}>
+          {block.items.map((item, idx) => (
+            <div key={idx} className={styles.checklistItem}>
+              <input
+                type="checkbox"
+                checked={item.done}
+                onChange={(e) => {
+                  const items = [...block.items];
+                  items[idx] = { ...items[idx], done: e.target.checked };
+                  onChange({ ...block, items });
+                }}
+              />
+
+              <div className={styles.checklistEditor}>
+                <RichTextEditor
+                  value={item.richTextJson}
+                  onChange={(v) => {
+                    const items = [...block.items];
+                    items[idx] = { ...items[idx], richTextJson: v };
+                    onChange({ ...block, items });
+                  }}
+                  placeholder="Checklist item..."
+                  ui={richUi}
+                />
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            className={styles.addItemBtn}
+            onClick={() =>
+              onChange({
+                ...block,
+                items: [...block.items, { richTextJson: "", done: false }],
+              })
+            }
+          >
+            + Item
+          </button>
+        </div>
       );
 
     case "code":
@@ -118,21 +163,19 @@ export function UpdateTaskBlock({ block, onChange }: UpdateProps) {
             placeholder="Language (e.g. ts, js)"
             onChange={(e) =>
               onChange({
-                type: "code",
+                ...block,
                 language: e.target.value,
-                codeContent: block.codeContent,
               })
             }
           />
+
           <textarea
-            ref={textareaRef}
             className={`${styles.textarea} ${styles.codeTextarea}`}
             value={block.codeContent}
             placeholder="Paste code..."
             onChange={(e) =>
               onChange({
-                type: "code",
-                language: block.language,
+                ...block,
                 codeContent: e.target.value,
               })
             }
@@ -144,5 +187,3 @@ export function UpdateTaskBlock({ block, onChange }: UpdateProps) {
       return null;
   }
 }
-
-
