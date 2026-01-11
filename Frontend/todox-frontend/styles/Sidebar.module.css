@@ -1,32 +1,45 @@
 
 .sidebar {
   position: relative;
-  width: 280px;
-  height: 100vh;
 
+  /* ВАЖНО: ширина должна браться из переменной, если вы её меняете в JS */
+  width: var(--sidebar-w, 280px);
+  min-width: 220px;
+  max-width: 520px;
+
+  height: 100vh;
   display: flex;
   flex-direction: column;
 
-  /* СВЕТЛЕЕ ОСНОВНОГО ФОНА */
-  background: #252526;        
+  background: #252526;
   border-right: 1px solid #2f2f2f;
-  min-width: 220px;
-  overflow: auto;
+
+  overflow: hidden;
 }
+
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;  
+  padding: 6px;
+}
+
+
 .resizer {
   position: absolute;
   top: 0;
-  right: 0;
+  right: -3px;     
   width: 6px;
   height: 100%;
   cursor: col-resize;
-  transform: translateX(50%);
   z-index: 10;
 }
 
 .resizer:hover {
   background: rgba(0, 0, 0, 0.08);
 }
+
 
 /* ===== HEADER ===== */
 
@@ -54,6 +67,7 @@
   display: flex;
   gap: 10px;
   justify-content: center;
+  align-items: center;
   margin-top: 20px;
   color: #aea3a3;
 }
@@ -179,4 +193,79 @@
 
 .nav::-webkit-scrollbar-thumb:hover {
   background: #3f3f3f;
+}
+/* Row that contains icons + inline filter */
+.iconsRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* optional: for filter icon styling */
+.iconBtn {
+  transition: color 120ms ease, filter 120ms ease;
+}
+
+/* filter active glow */
+.iconActive {
+  color: #ffffff;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25));
+}
+
+/* Inline filter container */
+.inlineFilter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  width: 100%;
+  padding: 0 6px;
+}
+
+/* Search input (same theme) */
+.filterInput {
+  width: 100%;
+  background: #1f1f1f;
+  border: 1px solid #2f2f2f;
+  color: #e0e0e0;
+
+  padding: 8px 34px 8px 10px; /* space for × button */
+  border-radius: 8px;
+  outline: none;
+  font-size: 13px;
+}
+
+.filterInput:focus {
+  border-color: #3a3d41;
+}
+
+/* Clear / close button */
+.filterClear,
+.filterClose {
+  position: absolute;
+  right: 14px;
+
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+
+  border: 1px solid #2f2f2f;
+  background: #252526;
+  color: #aea3a3;
+
+  cursor: pointer;
+  line-height: 1;
+  font-size: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filterClear:hover,
+.filterClose:hover {
+  color: #ffffff;
+  border-color: #3a3d41;
+  background: #313131;
 }

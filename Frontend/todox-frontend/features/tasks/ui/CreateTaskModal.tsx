@@ -29,6 +29,7 @@ import { CSS } from "@dnd-kit/utilities";
 type Props = {
   planId: string;
   onClose: () => void;
+  onCreated?: () => void | Promise<void>;
 };
 
 type UiBlock = {

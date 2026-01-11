@@ -33,7 +33,16 @@ export function UpdateTask(planId: string, taskId: string, payload: TaskDto): Pr
   });
 }
 
-
+export function deleteTask(
+  planId: string,
+  id: string,
+  signal?: AbortSignal
+): Promise<string> {
+  return api<string>(`/plans/${planId}/tasks/${id}/Delete`, {
+    method: "DELETE",
+    signal,
+  });
+}
 
 
 

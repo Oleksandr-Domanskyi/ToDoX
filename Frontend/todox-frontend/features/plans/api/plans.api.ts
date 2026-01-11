@@ -16,3 +16,10 @@ export function createPlan(payload: Partial<Plan>): Promise<Plan> {
     body: JSON.stringify(payload),
   });
 }
+
+export function deletePlan(id: string, signal?: AbortSignal): Promise<string> {
+  return api<string>(`/plans/Delete/${id}`, {
+    method: "DELETE",
+    signal,
+  });
+}
