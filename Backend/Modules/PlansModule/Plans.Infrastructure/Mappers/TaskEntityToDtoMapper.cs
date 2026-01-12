@@ -32,11 +32,11 @@ public static class TaskEntityToDtoMapper
             switch (block)
             {
                 case CreateTextBlockRequest t:
-                    task.AddTextBlock(t.RichTextJson, t.Order);
+                    task.AddTextBlock(t.RichTextJson, t.Order, t.Position, t.Row);
                     break;
 
                 case CreateImageBlockRequest i:
-                    task.AddImageBlock(i.ImageUrl, i.CaptionRichTextJson, i.Order);
+                    task.AddImageBlock(i.ImageUrl, i.CaptionRichTextJson, i.Order, i.Position, i.Row);
                     break;
 
                 case CreateChecklistBlockRequest c:
@@ -46,11 +46,11 @@ public static class TaskEntityToDtoMapper
                         Done = i.Done
                     }).ToList();
 
-                    task.AddCheckListBlock(checklistItems, c.Order);
+                    task.AddCheckListBlock(checklistItems, c.Order, c.Position, c.Row);
                     break;
 
                 case CreateCodeBlockRequest cb:
-                    task.AddCodeBlock(cb.CodeContent, cb.Language, cb.Order);
+                    task.AddCodeBlock(cb.CodeContent, cb.Language, cb.Order, cb.Position, cb.Row);
                     break;
 
                 default:
@@ -61,29 +61,46 @@ public static class TaskEntityToDtoMapper
     }
 
     private static TaskDescriptionBlockDto MapDescriptionBlock(TaskDescriptionBlock block) =>
-        block switch
+    block switch
+    {
+        TextBlock t => new TextBlockDto
         {
-            TextBlock t => new TextBlockDto
+            Order = t.Order,
+            Position = t.Position,
+            Row = t.Row,
+            RichTextJson = t.RichTextJson
+        },
+
+        CheckListBlock c => new CheckListBlockDto
+        {
+            Order = c.Order,
+            Position = c.Position,
+            Row = c.Row,
+            Items = c.Items.Select(i => new ChecklistItemDto
             {
-                RichTextJson = t.RichTextJson
-            },
-            CheckListBlock c => new CheckListBlockDto
-            {
-                Items = c.Items.Select(i => new ChecklistItemDto
-                {
-                    RichTextJson = i.RichTextJson,
-                    Done = i.Done
-                }).ToList()
-            },
-            CodeBlock cb => new CodeBlockDto
-            {
-                CodeContent = cb.CodeContent,
-                Language = cb.Language
-            },
-            ImageBlock i => new ImageBlockDto
-            {
-                ImageUrl = i.ImageUrl
-            },
-            _ => throw new ArgumentException($"Unknown block type: {block.GetType().Name}")
-        };
+                RichTextJson = i.RichTextJson,
+                Done = i.Done
+            }).ToList()
+        },
+
+        CodeBlock cb => new CodeBlockDto
+        {
+            Order = cb.Order,
+            Position = cb.Position,
+            Row = cb.Row,
+            CodeContent = cb.CodeContent,
+            Language = cb.Language
+        },
+
+        ImageBlock i => new ImageBlockDto
+        {
+            Order = i.Order,
+            Position = i.Position,
+            Row = i.Row,
+            ImageUrl = i.ImageUrl
+        },
+
+        _ => throw new ArgumentException($"Unknown block type: {block.GetType().Name}")
+    };
+
 }

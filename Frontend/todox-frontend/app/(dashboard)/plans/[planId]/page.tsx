@@ -1,3 +1,4 @@
+// app/(whatever)/plans/[planId]/page.tsx  (путь оставь свой)
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -11,19 +12,86 @@ import { CreateTaskModal } from "@/features/tasks/ui/CreateTaskModal";
 
 import { TaskBlock } from "@/shared/ui/task-block";
 import type { Task } from "@/features/tasks/model/tasks.types";
-import type { Block } from "@/shared/types/block";
+import type { Block, BlockPosition } from "@/shared/types/block";
 
 import styles from "../../../../styles/PlanPage.module.css";
 import { deleteTask } from "@/features/tasks/api/task.api";
 
-function sortBlocksByOrder(blocks: Block[]) {
+/**
+ * Полная версия PlanPage:
+ * - блоки рендерятся "как записано" (Row/Position)
+ * - поддержка row/Row и position/Position
+ * - правильный CSS Grid через inline style (gridRow/gridColumn)
+ */
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function readNumber(v: unknown, fallback: number): number {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const s = v.trim();
+    if (!s) return fallback;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : fallback;
+  }
+  return fallback;
+}
+
+function toBlockPosition(v: unknown): BlockPosition {
+  if (typeof v === "number" && Number.isFinite(v)) {
+    if (v === 0) return "left";
+    if (v === 1) return "right";
+    if (v === 2) return "full";
+    return "full";
+  }
+
+  if (typeof v !== "string") return "full";
+  const s = v.trim().toLowerCase();
+
+  if (s === "left" || s === "l" || s === "0") return "left";
+  if (s === "right" || s === "r" || s === "1") return "right";
+  if (s === "full" || s === "f" || s === "2") return "full";
+
+  if (s.includes("left")) return "left";
+  if (s.includes("right")) return "right";
+  if (s.includes("full")) return "full";
+
+  return "full";
+}
+
+function getProp(obj: Record<string, unknown>, ...keys: string[]) {
+  for (const k of keys) if (k in obj) return obj[k];
+  return undefined;
+}
+
+/**
+ * Сортировка "как записано":
+ * Row ASC -> Position(left, right, full) -> order ASC -> idx
+ */
+function sortBlocksByLayout(blocks: Block[]): Block[] {
+  const posRank = (p: BlockPosition) => (p === "left" ? 0 : p === "right" ? 1 : 2);
+
   return blocks
-    .map((b, idx) => ({ b, idx }))
-    .sort((x, y) => {
-      const xo = typeof x.b.order === "number" ? x.b.order : Number.MAX_SAFE_INTEGER;
-      const yo = typeof y.b.order === "number" ? y.b.order : Number.MAX_SAFE_INTEGER;
-      if (xo !== yo) return xo - yo;
-      return x.idx - y.idx;
+    .map((b, idx) => {
+      const base = isRecord(b) ? (b as unknown as Record<string, unknown>) : {};
+      const Row = readNumber(getProp(base, "Row", "row"), 0);
+      const Position = toBlockPosition(getProp(base, "Position", "position"));
+      const order = readNumber(getProp(base, "order", "Order"), Number.MAX_SAFE_INTEGER);
+
+      return { b, idx, Row, Position, order };
+    })
+    .sort((a, c) => {
+      if (a.Row !== c.Row) return a.Row - c.Row;
+
+      const prA = posRank(a.Position);
+      const prC = posRank(c.Position);
+      if (prA !== prC) return prA - prC;
+
+      if (a.order !== c.order) return a.order - c.order;
+
+      return a.idx - c.idx;
     })
     .map((x) => x.b);
 }
@@ -36,7 +104,6 @@ function formatRailLabel(t: Task, index: number) {
 const RAIL_STORAGE_KEY = "plan-rail-collapsed";
 
 function loadRailCollapsed(): boolean {
-  // no SSR issues because this file is "use client"
   if (typeof window === "undefined") return false;
 
   try {
@@ -63,7 +130,6 @@ export default function PlanPage() {
   const safeTasks = useMemo(() => tasks ?? [], [tasks]);
   const hasTasks = safeTasks.length > 0;
 
-  // ✅ no useEffect, no ESLint warning
   const [railCollapsed, setRailCollapsed] = useState<boolean>(() => loadRailCollapsed());
 
   const toggleRail = () => {
@@ -175,8 +241,15 @@ export default function PlanPage() {
 
             <ul className={styles.cardsList}>
               {safeTasks.map((task) => {
-                const blocks = Array.isArray(task.blocks) ? task.blocks : [];
-                const blocksSorted = sortBlocksByOrder(blocks);
+                const blocks = Array.isArray(task.blocks) ? (task.blocks as Block[]) : [];
+                const blocksSorted = sortBlocksByLayout(blocks);
+
+                // Для корректного автоподбора количества строк:
+                const maxRow = blocksSorted.reduce((m, b) => {
+                  const base = isRecord(b) ? (b as unknown as Record<string, unknown>) : {};
+                  const r = readNumber(getProp(base, "Row", "row"), 0);
+                  return Math.max(m, r);
+                }, 0);
 
                 return (
                   <li
@@ -219,24 +292,47 @@ export default function PlanPage() {
 
                       <div className={styles.meta}>
                         Created: {new Date(task.createdAt).toLocaleString()}
-                        {task.updatedAt &&
-                          ` · Updated: ${new Date(task.updatedAt).toLocaleString()}`}
+                        {task.updatedAt && ` · Updated: ${new Date(task.updatedAt).toLocaleString()}`}
                       </div>
 
                       {blocksSorted.length > 0 && (
-                        <div className={styles.blocks}>
-                          {blocksSorted.map((block, i) => (
-                            <div
-                              key={
-                                typeof block.order === "number"
-                                  ? `${block.type}_${block.order}`
-                                  : `${block.type}_${i}`
-                              }
-                              className={styles.block}
-                            >
-                              <TaskBlock block={block} />
-                            </div>
-                          ))}
+                        <div
+                          className={styles.blocks}
+                          style={{
+                            // чтобы grid знал сколько строк, если используешь auto-rows — можно не задавать
+                            // но это иногда помогает в сочетании с overflow/контентом
+                            gridTemplateRows: `repeat(${maxRow + 1}, auto)`,
+                          }}
+                        >
+                          {blocksSorted.map((block, i) => {
+                            const base = isRecord(block)
+                              ? (block as unknown as Record<string, unknown>)
+                              : {};
+
+                            const row = readNumber(getProp(base, "Row", "row"), 0);
+                            const pos = toBlockPosition(getProp(base, "Position", "position"));
+
+                            const gridColumn =
+                              pos === "full" ? "1 / -1" : pos === "left" ? "1 / 2" : "2 / 3";
+                            const gridRow = String(row + 1);
+
+                            const ord = readNumber(getProp(base, "order", "Order"), i);
+
+                            return (
+                              <div
+                                key={`${block.type}_${row}_${pos}_${ord}_${i}`}
+                                className={`${styles.block} ${
+                                  pos === "full" ? styles.blockFull : pos === "left" ? styles.blockLeft : styles.blockRight
+                                }`}
+                                style={{
+                                  gridColumn,
+                                  gridRow,
+                                }}
+                              >
+                                <TaskBlock block={block} />
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>

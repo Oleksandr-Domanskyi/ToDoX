@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { usePlans } from "@/features/plans/api/plans.queries";
 import { CreatePlanModal } from "@/features/plans/ui/CreatePlanModal";
 
-import styles from "./PlansPage.module.css";
+import styles from "../plans/PlansPage.module.css";
 import type { Plan } from "@/features/plans/model/plan.types";
 
 export default function PlansPage() {

@@ -6,7 +6,7 @@ public sealed class CodeBlock : TaskDescriptionBlock
     public string Language { get; private set; } = string.Empty;
 
     private CodeBlock() { }
-    public CodeBlock(Guid taskId, string codeContent, string? language, int order) : base(taskId, order)
+    public CodeBlock(Guid taskId, string codeContent, string? language, int order, string position, int row) : base(taskId, order, position, row)
     {
         CodeContent = codeContent ?? throw new ArgumentNullException(nameof(codeContent));
         Language = string.IsNullOrWhiteSpace(language)

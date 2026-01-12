@@ -220,14 +220,7 @@
   background: rgba(11, 15, 20, 0.35);
 }
 
-/* === SORTABLE ROW WRAPPER === */
-.sortableItem {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
-}
-
+/* === DRAG WRAPPER IN GRID === */
 .dragHandle {
   height: 100%;
   min-height: 44px;
@@ -258,10 +251,14 @@
 
 .sortableContent {
   min-width: 0;
+  height: 100%;
 }
 
-/* === BLOCK CARD === */
+/* === BLOCK CARD (single source of truth) === */
 .blockCard {
+  height: 100%;
+  overflow: hidden;
+
   background: #222a35;
   border: 1px solid #2b3646;
   border-radius: 12px;
@@ -354,7 +351,6 @@
   min-width: 0;
 }
 
-/* Code textarea specifics */
 .codeTextarea {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
@@ -418,51 +414,10 @@
   color: #bde7d2;
 }
 
-
-
 .footer button:last-child:hover {
   background: rgba(46, 93, 73, 0.28);
   border-color: #2e5d49;
   color: #e8fff3;
-}
-
-/* === RESPONSIVE === */
-@media (min-width: 640px) {
-  .modal {
-    padding: 18px 20px;
-  }
-}
-
-@media (max-width: 520px) {
-  .sortableItem {
-    grid-template-columns: 1fr;
-  }
-
-  .dragHandle {
-    height: 34px;
-    min-height: 34px;
-  }
-
-  .codeWrap {
-    grid-template-columns: 1fr;
-  }
-
-  .codeGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-  .blockTextarea {
-  width: 100%;
-  box-sizing: border-box;
-
-  min-height: 90px;
-
-  resize: none;
-  overflow: hidden; 
-
-}
 }
 
 /* ============================
@@ -511,7 +466,7 @@
 
   border-radius: 10px;
   border: 1px solid #2b3646;
-  background: #0b0f14;
+  background: rgba(9, 12, 16, 0.98);
   color: #e8edf3;
 
   position: relative;
@@ -523,7 +478,6 @@
   background: #0e141c;
 }
 
-/* TipTap internal element */
 .richContent :global(.ProseMirror) {
   outline: none;
   min-height: 70px;
@@ -536,20 +490,20 @@
   word-break: break-word;
 }
 
-/* reset default margins */
 .richContent :global(.ProseMirror p) {
   margin: 0;
 }
+
 .richContent :global(.ProseMirror ul),
 .richContent :global(.ProseMirror ol) {
   margin: 0;
   padding-left: 18px;
 }
+
 .richContent :global(.ProseMirror li) {
   margin: 0;
 }
 
-/* selection */
 .richContent :global(.ProseMirror ::selection) {
   background: rgba(138, 180, 255, 0.25);
 }
@@ -568,49 +522,6 @@
    Checklist layout
 ============================ */
 
-.checklist {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.checklistItem {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
-}
-
-.checklistItem input[type="checkbox"] {
-  margin-top: 10px;
-}
-
-.checklistEditor {
-  min-width: 0;
-}
-
-.addItemBtn {
-  align-self: flex-start;
-
-  font-size: 12px;
-  line-height: 1;
-
-  padding: 8px 10px;
-  border-radius: 999px;
-
-  border: 1px solid #2b3646;
-  background: #0b0f14;
-  color: #aeb7c4;
-
-  cursor: pointer;
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
-}
-
-.addItemBtn:hover {
-  background: rgba(46, 93, 73, 0.18);
-  border-color: #2e5d49;
-  color: #bde7d2;
-}
 .checklist {
   display: flex;
   flex-direction: column;
@@ -659,30 +570,122 @@
   background: rgba(255, 107, 107, 0.12);
 }
 
-.ProseMirror pre {
-  background: #0b0f14;
+.addItemBtn {
+  align-self: flex-start;
+
+  font-size: 12px;
+  line-height: 1;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+
   border: 1px solid #2b3646;
+  background: #0b0f14;
+  color: #aeb7c4;
+
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.addItemBtn:hover {
+  background: rgba(46, 93, 73, 0.18);
+  border-color: #2e5d49;
+  color: #bde7d2;
+}
+
+/* ============================
+   Grid + Drop Overlay
+============================ */
+
+.blocksGridWrap {
+  position: relative;
+  isolation: isolate;
+}
+
+.blocksGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.sortableItemGrid {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: stretch;
+  min-width: 0;
+  height: 100%;
+}
+
+.dropOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.dropRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.dropField {
+  border: 2px solid rgba(255, 255, 255, 0.35);
   border-radius: 10px;
-  padding: 12px 14px;
-
-  overflow: hidden;     
-  white-space: pre-wrap;  
-  word-break: break-word;
-
-  line-height: 1.45;
+  background: rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 120ms ease, border-color 120ms ease, background 120ms ease;
 }
 
-.ProseMirror pre code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
-  font-size: 13px;
+.dropFieldLabel {
+  font-size: 14px;
+  opacity: 0.9;
+  user-select: none;
 }
 
-.hljs-comment { color: #8b949e; }
-.hljs-keyword { color: #ff7b72; }
-.hljs-string { color: #a5d6ff; }
-.hljs-title,
-.hljs-function { color: #d2a8ff; }
-.hljs-number { color: #79c0ff; }
-.hljs-built_in { color: #ffa657; }
-.hljs-type { color: #7ee787; }
+.dropFieldHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dropFieldVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dropFieldOver {
+  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+/* === RESPONSIVE === */
+@media (min-width: 640px) {
+  .modal {
+    padding: 18px 20px;
+  }
+}
+
+@media (max-width: 520px) {
+  .sortableItemGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dragHandle {
+    height: 34px;
+    min-height: 34px;
+  }
+
+  .codeWrap {
+    grid-template-columns: 1fr;
+  }
+}

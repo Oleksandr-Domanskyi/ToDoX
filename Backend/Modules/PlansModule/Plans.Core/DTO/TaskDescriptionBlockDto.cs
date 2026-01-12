@@ -13,4 +13,10 @@ public abstract class TaskDescriptionBlockDto
 {
     [JsonPropertyName("order")]
     public int Order { get; init; }
+
+    [JsonPropertyName("position")]
+    public string Position { get; init; } = "left";
+
+    [JsonPropertyName("row")]
+    public int Row { get; init; }
 }

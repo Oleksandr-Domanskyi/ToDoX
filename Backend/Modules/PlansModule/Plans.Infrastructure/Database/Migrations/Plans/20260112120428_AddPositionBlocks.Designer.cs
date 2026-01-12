@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ToDoX.Infrastructure.Database;
@@ -11,9 +12,11 @@ using ToDoX.Infrastructure.Database;
 namespace Plans.Infrastructure.Database.Migrations.Plans
 {
     [DbContext(typeof(PlanShemeDbContext))]
-    partial class PlanShemeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112120428_AddPositionBlocks")]
+    partial class AddPositionBlocks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,9 +68,6 @@ namespace Plans.Infrastructure.Database.Migrations.Plans
                     b.Property<string>("Position")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Row")
-                        .HasColumnType("integer");
 
                     b.Property<Guid>("TaskId")
                         .HasColumnType("uuid");

@@ -156,17 +156,31 @@
   color: #97a3b3;
 }
 
+/* =========================================================
+   BLOCKS LAYOUT (IMPORTANT)
+   - было flex-column -> стало grid
+   - inline style gridRow/gridColumn из React начнут работать
+   ========================================================= */
 .blocks {
   margin-top: 6px;
 
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* left / right */
+  gap: 10px 12px;
+
+  align-items: start;
 }
 
 .block {
   padding-left: 12px;
   border-left: 3px solid #f2c94c;
+
+  min-width: 0; /* важно для переполнений */
+}
+
+/* опционально: если используешь классы blockLeft/blockRight/blockFull */
+.blockFull {
+  grid-column: 1 / -1;
 }
 
 /* === CONTENT NORMALIZATION === */
@@ -249,9 +263,6 @@
   gap: 22px;
   align-items: start;
   width: 100%;
-
-  container-type: inline-size;
-  container-name: plan-shell;
 }
 
 .main {
@@ -457,9 +468,9 @@
 }
 
 /* =========================================================
-   AUTO COLLAPSE by container width (left sidebar affects it)
+   RESPONSIVE (replaces @container to avoid CSS Modules issues)
    ========================================================= */
-@container plan-shell (max-width: 1100px) {
+@media (max-width: 1100px) {
   .shell {
     grid-template-columns: minmax(0, 1fr) 86px;
   }
@@ -488,12 +499,21 @@
   }
 }
 
-/* Optional: if very narrow -> hide rail */
-@container plan-shell (max-width: 860px) {
+@media (max-width: 860px) {
   .shell {
     grid-template-columns: 1fr;
   }
+
   .rail {
     display: none;
+  }
+
+  /* blocks collapse to single column */
+  .blocks {
+    grid-template-columns: 1fr;
+  }
+
+  .block {
+    grid-column: 1 / -1 !important;
   }
 }

@@ -5,9 +5,13 @@ export type ChecklistItem = {
   done: boolean;
 };
 
+export type BlockPosition = "left" | "right" | "full";
+
 type BaseBlock = {
   type: "text" | "image" | "checklist" | "code";
   order: number;
+  Position: BlockPosition;
+  Row: number;
 };
 
 export type TextBlock = BaseBlock & {
@@ -33,4 +37,3 @@ export type CodeBlock = BaseBlock & {
 };
 
 export type Block = TextBlock | ImageBlock | ChecklistBlock | CodeBlock;
-

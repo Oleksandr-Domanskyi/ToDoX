@@ -5,7 +5,7 @@ public sealed class TextBlock : TaskDescriptionBlock
     public string RichTextJson { get; private set; } = string.Empty;
 
     private TextBlock() { }
-    public TextBlock(Guid taskEntityId, string textJson, int order) : base(taskEntityId, order)
+    public TextBlock(Guid taskEntityId, string textJson, int order, string position, int row) : base(taskEntityId, order, position, row)
     {
         RichTextJson = textJson;
     }

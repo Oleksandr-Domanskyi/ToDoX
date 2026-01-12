@@ -24,11 +24,11 @@ public static class TaskBlockUpdater
         switch (dto)
         {
             case TextBlockDto t:
-                task.AddTextBlock(t.RichTextJson, t.Order);
+                task.AddTextBlock(t.RichTextJson, t.Order, t.Position, t.Row);
                 break;
 
             case ImageBlockDto i:
-                task.AddImageBlock(i.ImageUrl, i.CaptionRichTextJson, i.Order);
+                task.AddImageBlock(i.ImageUrl, i.CaptionRichTextJson, i.Order, i.Position, i.Row);
                 break;
 
             case CheckListBlockDto c:
@@ -37,11 +37,11 @@ public static class TaskBlockUpdater
                     RichTextJson = i.RichTextJson,
                     Done = i.Done
                 }).ToList();
-                task.AddCheckListBlock(checklistItems, c.Order);
+                task.AddCheckListBlock(checklistItems, c.Order, c.Position, c.Row);
                 break;
 
             case CodeBlockDto cb:
-                task.AddCodeBlock(cb.CodeContent, cb.Language, cb.Order);
+                task.AddCodeBlock(cb.CodeContent, cb.Language, cb.Order, cb.Position, cb.Row);
                 break;
 
             default:

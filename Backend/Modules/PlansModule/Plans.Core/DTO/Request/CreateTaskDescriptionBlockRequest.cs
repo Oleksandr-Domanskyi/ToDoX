@@ -21,6 +21,8 @@ public sealed class CreateTaskRequest
 public abstract class CreateTaskBlockRequest
 {
     public int Order { get; init; }
+    public string Position { get; init; } = "left";
+    public int Row { get; init; }
 }
 
 public sealed class CreateTextBlockRequest : CreateTaskBlockRequest
