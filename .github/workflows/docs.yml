@@ -21,6 +21,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0.x"
+      
+      - name: Restore
+        run: dotnet restore ToDoX.sln
 
       - name: Install DocFX
         run: dotnet tool install -g docfx
