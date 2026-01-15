@@ -31,30 +31,25 @@ public class TaskEntity : Entity<Guid>
             throw new ArgumentException("Title is required.", nameof(title));
 
         Title = title.Trim();
-        Touch();
     }
 
     public void AddCheckListBlock(List<ChecklistElements> content, int Order, string position, int row)
     {
         _blocks.Add(new CheckListBlock(Id, content, Order, position, row));
-        Touch();
     }
     public void AddTextBlock(string textJson, int Order, string position, int row)
     {
         _blocks.Add(new TextBlock(Id, textJson, Order, position, row));
-        Touch();
     }
     public void AddImageBlock(string imageUrl, string captionRichTextJson, int Order, string position, int row)
     {
         _blocks.Add(new ImageBlock(Id, imageUrl, captionRichTextJson, Order, position, row));
-        Touch();
     }
     public void AddCodeBlock(string codeContent, string language, int Order, string position, int row)
     {
         _blocks.Add(new CodeBlock(Id, codeContent, language, Order, position, row));
-        Touch();
     }
-    private void Touch() => UpdatedAt = DateTime.UtcNow;
+    public void Touch() => UpdatedAt = DateTime.UtcNow;
 
 
     public void RemoveBlockAt(int index)

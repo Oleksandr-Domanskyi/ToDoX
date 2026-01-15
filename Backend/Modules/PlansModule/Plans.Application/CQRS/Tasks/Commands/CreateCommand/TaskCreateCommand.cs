@@ -4,7 +4,14 @@ using Plans.Core.DTO.Request;
 
 namespace Plans.Application.CQRS.Tasks.Commands.CreateCommand;
 
-public class TaskCreateCommand(CreateTaskRequest request) : IRequest
+public class TaskCreateCommand : IRequest
 {
-    public CreateTaskRequest Request = request;
+    public CreateTaskRequest Request;
+    public TaskCreateCommand(CreateTaskRequest request, Guid planId)
+    {
+        Request = request;
+        Request.PlanId = planId;
+    }
+
+
 }

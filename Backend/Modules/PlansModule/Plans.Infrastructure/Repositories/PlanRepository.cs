@@ -32,12 +32,9 @@ public class PlanRepository : IPlanRepository
         return await _dbContext.Plans.ToListAsync(cancellationToken);
     }
 
-    public async Task<PlanEntity> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<PlanEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await _dbContext.Plans.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
-        if (entity == null)
-            throw new Exception($"Plan with id {id} not found");
-        return entity;
+        return await _dbContext.Plans.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task UpdateAsync(UpdatePlanRequest updatedto, CancellationToken cancellationToken = default)

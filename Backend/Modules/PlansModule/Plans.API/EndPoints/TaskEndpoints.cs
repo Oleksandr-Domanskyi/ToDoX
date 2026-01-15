@@ -32,15 +32,12 @@ namespace Plans.API.EndPoints
             });
             endpoint.MapPost("plans/{planId}/tasks/Create", async (Guid planId, CreateTaskRequest request, IMediator mediator, CancellationToken cancellationToken) =>
             {
-                request.PlanId = planId;
-                await mediator.Send(new TaskCreateCommand(request), cancellationToken);
+                await mediator.Send(new TaskCreateCommand(request, planId), cancellationToken);
                 return Results.Ok($"Task was created!!!");
             });
             endpoint.MapPut("plans/{planId}/tasks/{taskId}/Update", async (Guid planId, Guid taskId, TaskDto request, IMediator mediator, CancellationToken cancellationToken) =>
             {
-                request.PlanId = planId;
-                request.Id = taskId;
-                await mediator.Send(new TaskUpdateCommand(request), cancellationToken);
+                await mediator.Send(new TaskUpdateCommand(request, planId, taskId), cancellationToken);
                 return Results.Ok($"Task {request.Id} was updated!!!");
             });
             endpoint.MapDelete("plans/{planId}/tasks/{taskId}/Delete", async (Guid planId, Guid taskId, IMediator mediator, CancellationToken cancellationToken) =>

@@ -45,6 +45,7 @@ public class TaskRepository : ITaskRepository
         if (task.Title != dto.Title)
             task.SetTitle(dto.Title);
 
+        task.Touch();
         TaskBlockUpdater.ApplyBlocks(task, dto.Blocks);
     }
 

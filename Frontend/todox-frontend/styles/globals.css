@@ -1,40 +1,38 @@
-
-
 :root {
-  /* Backgrounds */
-  --app-bg: #1e1e1e;        
-  --panel-bg: #252526;      
-  --card-bg: #1f1f1f;
-  --elevated-bg: #2a2a2a;
+	/* === Backgrounds === */
+	--app-bg: #0b0f14; /* ГЛОБАЛЬНИЙ ФОН (основний) */
+	--panel-bg: #0f1620; /* панелі / секції */
+	--card-bg: #121a25; /* карточки / task */
+	--elevated-bg: #16202c; /* hover / active */
 
-  /* Borders */
-  --border: #2a2a2a;
-  --border-strong: #3a3a3a;
+	/* === Borders === */
+	--border: rgba(148, 163, 184, 0.14);
+	--border-strong: rgba(148, 163, 184, 0.22);
 
-  /* Text */
-  --text: #d4d4d4;
-  --text-2: #b3b3b3;
-  --text-3: #9a9a9a;
+	/* === Text === */
+	--text: #e5edf6; /* основний текст */
+	--text-2: rgba(148, 163, 184, 0.85);
+	--text-3: rgba(148, 163, 184, 0.6);
 
-  /* Accents */
-  --accent-yellow: #d7ba7d;
-  --accent-blue: #8ab4ff;
+	/* === Accents === */
+	--accent-yellow: #f2c94c; /* якщо хочеш лишити */
+	--accent-blue: #7dd3fc; /* спокійний blue */
 }
 
 html,
 body {
-  height: 100%;
+	height: 100%;
 }
 
 body {
-  margin: 0;
-  background: var(--app-bg);
-  color: var(--text);
+	margin: 0;
+	background: var(--app-bg);
+	color: var(--text);
 
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+	font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
 }
 
 /*
@@ -42,31 +40,30 @@ body {
 */
 
 .app_shell {
-  --sidebar-w: 280px;
+	--sidebar-w: 280px;
 
-  display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
+	display: grid;
+	grid-template-columns: var(--sidebar-w) 1fr;
 
-  width: 100vw;
-  height: 100vh;
+	width: 100vw;
+	height: 100vh;
 
-  background: var(--app-bg);
-  overflow: hidden;
+	background: var(--app-bg);
+	overflow: hidden;
 }
-
 
 /* Sidebar column */
 aside {
-  height: 100vh;
-  overflow-y: auto;
+	height: 100vh;
+	overflow-y: auto;
 }
 
 /* Main content column */
 .app_main {
-  height: 100vh;
-  overflow-y: auto;
-  min-width: 0;
-  background: transparent;
+	height: 100vh;
+	overflow-y: auto;
+	min-width: 0;
+	background: transparent;
 }
 
 /* 
@@ -76,29 +73,50 @@ aside {
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 /* highlight.js simple dark theme */
-.hljs-comment { color: #8b949e; }
-.hljs-quote { color: #8b949e; }
+
+.hljs {
+	color: var(--text);
+}
+
+.hljs-comment {
+	color: #8b949e;
+}
+.hljs-quote {
+	color: #8b949e;
+}
 
 .hljs-keyword,
 .hljs-selector-tag,
-.hljs-literal { color: #ff7b72; }
+.hljs-literal {
+	color: #ff7b72;
+}
 
 .hljs-string,
-.hljs-doctag { color: #a5d6ff; }
+.hljs-doctag {
+	color: #a5d6ff;
+}
 
 .hljs-title,
 .hljs-section,
-.hljs-selector-id { color: #d2a8ff; }
+.hljs-selector-id {
+	color: #d2a8ff;
+}
 
-.hljs-number { color: #79c0ff; }
+.hljs-number {
+	color: #79c0ff;
+}
 
 .hljs-built_in,
-.hljs-type { color: #ffa657; }
+.hljs-type {
+	color: #ffa657;
+}
 
 .hljs-attr,
 .hljs-attribute,
-.hljs-name { color: #7ee787; }
+.hljs-name {
+	color: #7ee787;
+}

@@ -1,519 +1,804 @@
-/* === PAGE LAYOUT === */
-.page {
-  width: 100%;
-  padding: 28px 22px;
+/* =========================
+   Minimal “adult” dark theme
+   ========================= */
 
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
+:root {
+	--bg: #070a0f;
+	--panel: rgba(255, 255, 255, 0.04);
+	--panel-2: rgba(255, 255, 255, 0.06);
+	--text: rgba(245, 247, 255, 0.92);
+	--muted: rgba(170, 182, 201, 0.78);
+	--faint: rgba(170, 182, 201, 0.52);
+	--line: rgba(170, 182, 201, 0.12);
+	--line-2: rgba(170, 182, 201, 0.16);
 
-  background: inherit;
-  color: #d7dce2;
+	--accent: rgba(94, 234, 212, 0.95);
+	--accent-bg: rgba(94, 234, 212, 0.12);
+
+	--danger: rgba(255, 99, 99, 0.95);
+	--danger-bg: rgba(255, 99, 99, 0.12);
+
+	--r: 16px;
+	--r2: 12px;
 }
 
-/* === PLAN HEADER === */
-.header {
-  background: #26282b;
-  border: 1px solid #222a35;
-  border-radius: 12px;
-  padding: 16px 18px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.title {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-  color: #eef2f6;
-}
-
-.description {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.65;
-  color: #a9b2bf;
-  max-width: 100%;
-}
-
-/* === TASKS SECTION === */
-.section {
-  background: #26282b;
-  border: 1px solid #222a35;
-  border-radius: 12px;
-  padding: 16px 18px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.sectionHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #222a35;
-}
-
-.sectionTitle {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: #eef2f6;
-}
-
-.counter {
-  font-size: 14px;
-  color: #97a3b3;
-}
-
-/* === empty: create task button === */
-.addTaskBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-
-  border: 1px solid #2b3646;
-  background: #0b0f14;
-  color: #aeb7c4;
-
-  padding: 8px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-
-  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
-}
-
-.addTaskBtn:hover {
-  border-color: #3a475b;
-  background: #121a22;
-  color: #eef2f6;
-}
-
-.addTaskText {
-  font-size: 13px;
-}
-
-/* === TASK CARD === */
-.task {
-  background: #222a35;
-  border: 1px solid #464051;
-  border-radius: 12px;
-
-  padding: 14px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  transition: border-color 120ms ease, background-color 120ms ease;
-}
-
-.task:hover {
-  border-color: #2b3646;
-  background: #121a22;
-}
-
-.taskHeader {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 12px;
-}
-
-.taskHeaderIcons {
-  display: flex;
-  gap: 12px;
-}
-
-.taskHeader i {
-  color: #aea3a3;
-  font-size: 20px;
-}
-
-.taskHeader i:hover {
-  color: #ffffff;
-  cursor: pointer;
-}
-
-.taskTitle {
-  font-size: 20px;
-  font-weight: 650;
-  line-height: 1.4;
-  color: #e8edf3;
-  word-break: break-word;
-}
-
-.meta {
-  font-size: 12px;
-  line-height: 1.5;
-  color: #97a3b3;
-}
-
-/* =========================================================
-   BLOCKS LAYOUT (IMPORTANT)
-   - было flex-column -> стало grid
-   - inline style gridRow/gridColumn из React начнут работать
-   ========================================================= */
-.blocks {
-  margin-top: 6px;
-
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* left / right */
-  gap: 10px 12px;
-
-  align-items: start;
-}
-
-.block {
-  padding-left: 12px;
-  border-left: 3px solid #f2c94c;
-
-  min-width: 0; /* важно для переполнений */
-}
-
-/* опционально: если используешь классы blockLeft/blockRight/blockFull */
-.blockFull {
-  grid-column: 1 / -1;
-}
-
-/* === CONTENT NORMALIZATION === */
-.block :where(p) {
-  margin: 8px 0;
-  line-height: 1.65;
-  color: #d7dce2;
-}
-
-.block :where(ul, ol) {
-  margin: 8px 0 8px 20px;
-  padding: 0;
-  color: #d7dce2;
-}
-
-.block :where(li) {
-  margin: 4px 0;
-}
-
-.block :where(code):not(pre code) {
-  display: inline;
-  padding: 2px 6px;
-  border-radius: 6px;
-  border: 1px solid #2b3646;
-
-  background: #1b2430;
-  color: #e8edf3;
-
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
-  font-size: 12.5px;
-}
-
-.block :where(pre) {
-  margin: 10px 0 0;
-  padding: 12px 14px;
-
-  border-radius: 10px;
-  border: 1px solid #2b3646;
-
-  background: #1b2430;
-  color: #e8edf3;
-
-  overflow-x: auto;
-  line-height: 1.55;
-}
-
-.block :where(pre code) {
-  display: block;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
-  font-size: 13px;
-}
-
-.block :where(hr) {
-  border: 0;
-  border-top: 1px solid #222a35;
-  margin: 12px 0;
-}
-
-.block :where(a) {
-  color: #8ab4ff;
-  text-decoration: none;
-}
-.block :where(a:hover) {
-  text-decoration: underline;
-}
-
-/* =========================================================
-   MAIN + RIGHT RAIL LAYOUT
-   ========================================================= */
 .shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 22px;
-  align-items: start;
-  width: 100%;
+	position: relative;
+	width: 100%;
+	min-height: 100vh;
+	background: var(--bg);
+	color: var(--text);
+}
+
+/* reading mode: reduce line length */
+.shellReading .page {
+	max-width: 980px;
+	margin: 0 auto;
+}
+
+.shellFocus .page {
+	padding-right: 26px;
+}
+
+/* backdrop: very subtle */
+.backdrop {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+
+	background: radial-gradient(
+			1100px 520px at 70% -10%,
+			rgba(94, 234, 212, 0.1),
+			transparent 55%
+		),
+		radial-gradient(
+			900px 520px at 18% 18%,
+			rgba(125, 211, 252, 0.08),
+			transparent 60%
+		),
+		radial-gradient(
+			900px 520px at 85% 70%,
+			rgba(196, 181, 253, 0.08),
+			transparent 62%
+		),
+		linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.25));
 }
 
 .main {
-  min-width: 0;
+	position: relative;
+	z-index: 1;
+	min-width: 0;
 }
 
-.cardsList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.page {
+	width: 100%;
+	padding: 26px 26px 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	position: relative;
+	isolation: isolate;
 }
 
-.cardItem {
-  min-width: 0;
+/* =========================
+   Header
+   ========================= */
+
+.header {
+	border-radius: var(--r);
+	background: var(--panel);
+	box-shadow: 0 12px 44px rgba(0, 0, 0, 0.35);
+	padding: 18px 18px;
+	backdrop-filter: blur(10px);
 }
 
-/* =========================================================
-   RIGHT RAIL (Navigation Timeline)
-   ========================================================= */
-.rail {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-
-  display: grid;
-  place-items: center;
-
-  pointer-events: auto;
-  padding-right: 18px;
+.headerTop {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 12px;
 }
 
-.railInner {
-  width: 100%;
-  max-width: 320px;
-
-  background: #26282b;
-  border: 1px solid #222a35;
-  border-radius: 14px;
-
-  padding: 14px 14px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.headerTitleArea {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
-.railHeader {
-  text-align: center;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #97a3b3;
-
-  padding-bottom: 8px;
-  border-bottom: 1px solid #222a35;
+.title {
+	margin: 0;
+	font-size: 28px;
+	font-weight: 760;
+	letter-spacing: -0.02em;
+	line-height: 1.15;
 }
 
-.railList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+.submeta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	color: var(--muted);
+	font-size: 12px;
 }
 
-.railItem {
-  position: relative;
-  display: grid;
-  grid-template-columns: 44px 1fr;
-  align-items: center;
-  gap: 10px;
+.metaChip {
+	padding: 6px 10px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.railItem::before {
-  content: "";
-  position: absolute;
-  left: 22px;
-  top: -12px;
-  bottom: -12px;
-  width: 2px;
-  background: rgba(255, 255, 255, 0.22);
-  border-radius: 2px;
+.metaSep {
+	color: rgba(255, 255, 255, 0.18);
 }
 
-.railItem:first-child::before {
-  top: 50%;
+.description {
+	margin: 12px 0 0;
+	color: var(--muted);
+	font-size: 14px;
+	line-height: 1.85;
+	max-width: 110ch;
 }
 
-.railItem:last-child::before {
-  bottom: 50%;
+/* header actions */
+.headerActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	flex: 0 0 auto;
 }
 
-.railDotBtn {
-  width: 44px;
-  height: 28px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-
-  display: grid;
-  place-items: center;
+.iconBtn {
+	width: 40px;
+	height: 40px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	background: rgba(255, 255, 255, 0.03);
+	color: var(--text);
+	cursor: pointer;
+	display: grid;
+	place-items: center;
 }
 
-.railDot {
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.7);
-  background: #26282b;
-  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
+.iconBtn:hover {
+	border-color: rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.05);
 }
 
-.railDotBtn:hover .railDot {
-  background: rgba(255, 255, 255, 0.18);
-  transform: scale(1.08);
+.ghostBtn {
+	height: 40px;
+	padding: 0 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	background: rgba(255, 255, 255, 0.03);
+	color: var(--text);
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	white-space: nowrap;
 }
 
-.railDotBtnActive .railDot {
-  background: #ffffff;
-  border-color: #ffffff;
+.ghostBtn i {
+	color: var(--accent);
 }
 
-.railLabel {
-  font-size: 12px;
-  color: #97a3b3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.ghostBtn:hover {
+	background: rgba(255, 255, 255, 0.05);
+	border-color: rgba(255, 255, 255, 0.1);
 }
 
-.railLabelActive {
-  color: #eef2f6;
-  font-weight: 600;
+/* plan menu */
+.menuRoot {
+	position: relative;
+	z-index: 50;
 }
 
-/* ===== Toggle button at end ===== */
-.railToggle {
-  margin-top: 6px;
-  width: 100%;
-  height: 34px;
+.menu {
+	position: absolute;
+	top: 46px;
+	right: 0;
+	min-width: 200px;
 
-  border: 1px solid #222a35;
-  background: #222a35;
-  color: #aeb7c4;
+	border-radius: 14px;
+	background: rgba(9, 12, 18, 0.92);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 18px 56px rgba(0, 0, 0, 0.55);
+	padding: 6px;
 
-  border-radius: 10px;
-  cursor: pointer;
-
-  display: grid;
-  place-items: center;
-
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+	z-index: 9999;
 }
 
-.railToggle:hover {
-  background: #121a22;
-  border-color: #2b3646;
-  color: #eef2f6;
+.menuItem {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+
+	padding: 10px 10px;
+	border-radius: 12px;
+
+	border: 0;
+	background: transparent;
+	color: rgba(245, 247, 255, 0.92);
+	cursor: pointer;
+	text-align: left;
+	font-size: 13px;
 }
 
-.railToggle i {
-  font-size: 14px;
+.menuItem i {
+	width: 18px;
+	text-align: center;
+	color: var(--muted);
 }
 
-/* =========================================================
-   MANUAL COLLAPSE (by button)
-   ========================================================= */
-.shellRailCollapsed {
-  grid-template-columns: minmax(0, 1fr) 86px;
+.menuItem:hover {
+	background: rgba(255, 255, 255, 0.06);
 }
 
-.shellRailCollapsed .railInner {
-  max-width: 86px;
-  padding: 12px 10px;
+.menuItem:hover i {
+	color: var(--text);
 }
 
-.shellRailCollapsed .railHeader {
-  display: none;
+.menuItemDanger i {
+	color: rgba(255, 140, 140, 0.95);
 }
 
-.shellRailCollapsed .railItem {
-  grid-template-columns: 1fr;
-  justify-items: center;
+.menuItemDanger:hover {
+	background: rgba(255, 99, 99, 0.1);
 }
 
-.shellRailCollapsed .railLabel {
-  display: none;
+/* inline editor (plan) */
+.inlineEditor {
+	margin-top: 14px;
+	padding-top: 14px;
+	border-top: 1px solid var(--line);
+
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 
-.shellRailCollapsed .railItem::before {
-  left: 50%;
-  transform: translateX(-50%);
+.formRow {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
 }
 
-.shellRailCollapsed .railToggle {
-  width: 100%;
+.label {
+	font-size: 12px;
+	color: var(--faint);
+	letter-spacing: 0.02em;
 }
 
-/* =========================================================
-   RESPONSIVE (replaces @container to avoid CSS Modules issues)
-   ========================================================= */
+.input,
+.textarea {
+	width: 100%;
+	border-radius: 14px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(0, 0, 0, 0.22);
+	color: var(--text);
+	padding: 12px 12px;
+	outline: none;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.textarea {
+	resize: vertical;
+}
+
+.input:focus,
+.textarea:focus {
+	border-color: rgba(94, 234, 212, 0.45);
+	box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12);
+}
+
+.formActions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+}
+
+.btn,
+.btnPrimary {
+	height: 40px;
+	padding: 0 14px;
+	border-radius: 999px;
+	cursor: pointer;
+	font-size: 13px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(255, 255, 255, 0.03);
+	color: rgba(245, 247, 255, 0.9);
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.btn:hover {
+	background: rgba(255, 255, 255, 0.05);
+	border-color: rgba(255, 255, 255, 0.12);
+}
+
+.btnPrimary {
+	border-color: rgba(94, 234, 212, 0.3);
+	background: rgba(94, 234, 212, 0.12);
+	color: rgba(235, 255, 252, 0.98);
+}
+
+.btnPrimary:hover {
+	border-color: rgba(94, 234, 212, 0.45);
+	background: rgba(94, 234, 212, 0.16);
+}
+
+/* =========================
+   Section / Controls
+   ========================= */
+
+.section {
+	border-radius: var(--r);
+	background: var(--panel);
+	box-shadow: 0 12px 44px rgba(0, 0, 0, 0.3);
+	overflow: hidden;
+}
+
+.sectionBar {
+	padding: 16px 18px 14px;
+	border-bottom: 1px solid var(--line);
+	backdrop-filter: blur(10px);
+	background: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 0.03),
+		rgba(255, 255, 255, 0.02)
+	);
+}
+
+.sectionTitleRow {
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	align-items: center;
+	gap: 14px;
+}
+
+.sectionTitle {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 720;
+	letter-spacing: -0.01em;
+}
+
+.sectionMeta {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--muted);
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.kpiSep {
+	opacity: 0.5;
+}
+
+.sectionActions {
+	display: inline-flex;
+	justify-content: flex-end;
+}
+
+/* controls row */
+.controlsRow {
+	margin-top: 12px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.searchWrap {
+	flex: 1 1 360px;
+	min-width: 280px;
+	display: grid;
+	grid-template-columns: 18px 1fr 34px;
+	align-items: center;
+	gap: 10px;
+
+	padding: 10px 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(0, 0, 0, 0.22);
+}
+
+.searchWrap i {
+	color: rgba(170, 182, 201, 0.75);
+}
+
+.search {
+	border: 0;
+	background: transparent;
+	color: var(--text);
+	outline: none;
+	font-size: 13px;
+}
+
+.search::placeholder {
+	color: rgba(170, 182, 201, 0.55);
+}
+
+.clearBtn {
+	width: 34px;
+	height: 34px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	background: rgba(255, 255, 255, 0.03);
+	color: var(--text);
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+}
+
+.clearBtn:hover {
+	background: rgba(255, 255, 255, 0.05);
+}
+
+.pills {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
+}
+
+.pill {
+	height: 38px;
+	padding: 0 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(255, 255, 255, 0.03);
+	color: rgba(245, 247, 255, 0.9);
+	cursor: pointer;
+	font-size: 13px;
+}
+
+.pill:hover {
+	background: rgba(255, 255, 255, 0.05);
+	border-color: rgba(255, 255, 255, 0.12);
+}
+
+.pillOn {
+	border-color: rgba(94, 234, 212, 0.3);
+	background: rgba(94, 234, 212, 0.1);
+}
+
+.select {
+	height: 38px;
+	padding: 0 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(0, 0, 0, 0.22);
+	color: rgba(245, 247, 255, 0.9);
+	outline: none;
+	cursor: pointer;
+	font-size: 13px;
+}
+
+/* progress */
+.progressRow {
+	margin-top: 12px;
+}
+
+.progressTrack {
+	height: 8px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.06);
+	overflow: hidden;
+}
+
+.progressFill {
+	height: 100%;
+	border-radius: 999px;
+	background: rgba(94, 234, 212, 0.92);
+	box-shadow: 0 0 28px rgba(94, 234, 212, 0.12);
+}
+
+/* =========================
+   List / Cards
+   ========================= */
+
+.list {
+	list-style: none;
+	margin: 0;
+	padding: 14px 18px 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.item {
+	min-width: 0;
+}
+
+.itemActive .card {
+	box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.14),
+		0 18px 56px rgba(0, 0, 0, 0.25);
+}
+
+.card {
+	border-radius: var(--r);
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.06); /* тонко, без “рамочного” ощущения */
+	padding: 14px 14px;
+}
+
+.card:hover {
+	border-color: rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.cardHead {
+	display: grid;
+	grid-template-columns: 34px 1fr auto;
+	gap: 12px;
+	align-items: start;
+}
+
+.collapseBtn {
+	width: 34px;
+	height: 34px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	background: rgba(255, 255, 255, 0.03);
+	color: rgba(245, 247, 255, 0.88);
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+}
+
+.collapseBtn:hover {
+	background: rgba(255, 255, 255, 0.05);
+	border-color: rgba(94, 234, 212, 0.22);
+}
+
+.cardTitleWrap {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.cardTitle {
+	font-size: 16px;
+	font-weight: 730;
+	line-height: 1.35;
+	letter-spacing: -0.01em;
+	word-break: break-word;
+}
+
+.cardMeta {
+	font-size: 12px;
+	color: var(--muted);
+	line-height: 1.5;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.cardMetaSep {
+	opacity: 0.5;
+}
+
+.cardActions {
+	display: flex;
+	align-items: center;
+}
+
+/* blocks layout */
+.blocks {
+	margin-top: 12px;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+	align-items: start;
+}
+
+.block {
+	border-radius: 14px;
+	background: rgba(0, 0, 0, 0.2);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	padding: 12px 12px;
+}
+
+/* prose (readability) */
+.block :global(.ProseMirror) {
+	color: rgba(245, 247, 255, 0.92);
+	line-height: 1.9;
+	font-size: 14px;
+}
+
+.block :global(.ProseMirror h1),
+.block :global(.ProseMirror h2),
+.block :global(.ProseMirror h3) {
+	margin: 14px 0 8px;
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+}
+
+.block :global(.ProseMirror h1) {
+	font-size: 20px;
+	font-weight: 780;
+}
+.block :global(.ProseMirror h2) {
+	font-size: 17px;
+	font-weight: 720;
+}
+.block :global(.ProseMirror h3) {
+	font-size: 15px;
+	font-weight: 680;
+}
+
+.block :global(.ProseMirror p) {
+	margin: 10px 0;
+	color: rgba(170, 182, 201, 0.92);
+}
+
+.block :global(.ProseMirror ul),
+.block :global(.ProseMirror ol) {
+	margin: 10px 0;
+	padding-left: 18px;
+	color: rgba(170, 182, 201, 0.92);
+}
+
+.block :global(.ProseMirror blockquote) {
+	margin: 12px 0;
+	padding: 10px 12px;
+	border-left: 3px solid rgba(94, 234, 212, 0.5);
+	background: rgba(94, 234, 212, 0.06);
+	border-radius: 12px;
+	color: rgba(245, 247, 255, 0.9);
+}
+
+.block :global(.ProseMirror code) {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
+	font-size: 12.5px;
+	padding: 2px 6px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.06);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	color: rgba(245, 247, 255, 0.92);
+}
+
+.block :global(.ProseMirror pre) {
+	margin: 10px 0;
+	padding: 12px 14px;
+	border-radius: 14px;
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	overflow: auto;
+}
+
+/* collapsed hint */
+.collapsedHint {
+	margin-top: 10px;
+	color: rgba(170, 182, 201, 0.72);
+	font-size: 12px;
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+}
+
+/* editor wrap */
+.editorWrap {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px solid var(--line);
+}
+
+/* bottom create */
+.bottomCreateWrap {
+	list-style: none;
+}
+
+.bottomCreate {
+	width: 100%;
+	height: 46px;
+
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+
+	border-radius: 999px;
+	border: 1px dashed rgba(255, 255, 255, 0.14);
+	background: rgba(255, 255, 255, 0.03);
+	color: rgba(245, 247, 255, 0.86);
+
+	cursor: pointer;
+}
+
+.bottomCreate:hover {
+	border-color: rgba(94, 234, 212, 0.28);
+	background: rgba(94, 234, 212, 0.06);
+}
+
+/* empty state */
+.empty {
+	padding: 20px 18px 22px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.emptyTitle {
+	font-size: 16px;
+	font-weight: 740;
+}
+
+.emptyText {
+	font-size: 13px;
+	line-height: 1.7;
+	color: var(--muted);
+	max-width: 80ch;
+}
+
+/* =========================
+   PORTAL menu (always on top)
+   ========================= */
+
+.menuPortal {
+	position: fixed;
+	z-index: 999999;
+	min-width: 196px;
+
+	border-radius: 14px;
+	background: rgba(9, 12, 18, 0.96);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow: 0 18px 56px rgba(0, 0, 0, 0.6);
+	padding: 6px;
+
+	backdrop-filter: blur(10px);
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
 @media (max-width: 1100px) {
-  .shell {
-    grid-template-columns: minmax(0, 1fr) 86px;
-  }
-
-  .railInner {
-    max-width: 86px;
-    padding: 12px 10px;
-  }
-
-  .railHeader {
-    display: none;
-  }
-
-  .railItem {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-
-  .railLabel {
-    display: none;
-  }
-
-  .railItem::before {
-    left: 50%;
-    transform: translateX(-50%);
-  }
+	.blocks {
+		grid-template-columns: 1fr;
+	}
+	.sectionTitleRow {
+		grid-template-columns: 1fr auto;
+		grid-auto-rows: auto;
+	}
+	.sectionActions {
+		grid-column: 2;
+	}
+	.sectionMeta {
+		display: none;
+	}
 }
 
-@media (max-width: 860px) {
-  .shell {
-    grid-template-columns: 1fr;
-  }
-
-  .rail {
-    display: none;
-  }
-
-  /* blocks collapse to single column */
-  .blocks {
-    grid-template-columns: 1fr;
-  }
-
-  .block {
-    grid-column: 1 / -1 !important;
-  }
+@media (max-width: 720px) {
+	.page {
+		padding: 18px 14px 30px;
+	}
+	.headerTop {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.headerActions {
+		justify-content: flex-start;
+		flex-wrap: wrap;
+	}
+	.controlsRow {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.searchWrap {
+		min-width: 0;
+	}
 }

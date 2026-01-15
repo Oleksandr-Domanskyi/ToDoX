@@ -5,7 +5,14 @@ using Plans.Core.DTO.Request;
 
 namespace Plans.Application.CQRS.Tasks.Commands.UpdateCommand;
 
-public class TaskUpdateCommand(TaskDto request) : IRequest
+public class TaskUpdateCommand : IRequest
 {
-    public TaskDto Request = request;
+    public TaskDto Request;
+    public TaskUpdateCommand(TaskDto request, Guid planId, Guid taskId)
+    {
+        Request = request;
+        Request.PlanId = planId;
+        Request.Id = taskId;
+    }
+
 }

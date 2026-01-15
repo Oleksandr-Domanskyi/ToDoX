@@ -24,7 +24,8 @@ public static class PlanEndpoints
         endpoint.MapGet("/plans/{id}", async (Guid id, IMediator mediator) =>
         {
             var plan = await mediator.Send(new PlanGetByIdQuery(id));
-            return plan is null ? Results.NotFound("Plan not found") : Results.Ok(plan);
+            if (plan.IsFailed) return Results.NotFound("Plan not found");
+            return Results.Ok(plan!.Value);
         });
         endpoint.MapPost("/plans/Create", async (CreatePlanRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
