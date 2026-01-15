@@ -1,0 +1,21 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": [ "../ToDoX.sln" ]
+        }
+      ],
+      "dest": "api"
+    }
+  ],
+  "build": {
+    "content": [
+      { "files": [ "**/*.md", "**/*.yml" ], "src": "." }
+    ],
+    "dest": "_site",
+    "globalMetadata": {
+      "_appTitle": "ToDoX Documentation"
+    }
+  }
+}
