@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using ToDoX.Infrastructure.Extensions;
 using Plans.API.Extensions;
 using Plans.API.EndPoints;
+using Plans.Web.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +28,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
 app.UseCors("Frontend");
+app.UsePlansExceptionHandling();
 app.AddPlanModuleEndpoints();
 
 if (app.Environment.IsDevelopment())

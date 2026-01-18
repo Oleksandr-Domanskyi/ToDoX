@@ -20,6 +20,10 @@ import styles from "../../../../styles/PlanPage.module.css";
 import { deleteTask } from "@/features/tasks/api/task.api";
 import { deletePlan, editPlan } from "@/features/plans/api/plans.api";
 
+// ===== storage keys (outside component) =====
+const FOCUS_STORAGE_KEY = "plan-focus-mode";
+const READING_STORAGE_KEY = "plan-reading-mode";
+
 // ===== Тип Plan =====
 type Id = string;
 
@@ -133,6 +137,23 @@ function taskHaystack(task: Task): string {
 
 type SortMode = "newest" | "oldest" | "updated";
 
+function loadFlag(key: string): boolean {
+	if (typeof window === "undefined") return false;
+	try {
+		return window.localStorage.getItem(key) === "1";
+	} catch {
+		return false;
+	}
+}
+
+function saveFlag(key: string, value: boolean) {
+	try {
+		window.localStorage.setItem(key, value ? "1" : "0");
+	} catch {
+		// ignore
+	}
+}
+
 export default function PlanPage() {
 	const { planId } = useParams<{ planId: string }>();
 	const router = useRouter();
@@ -157,33 +178,18 @@ export default function PlanPage() {
 	const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
 	// ===== UI modes =====
-	const FOCUS_STORAGE_KEY = "plan-focus-mode";
-	const READING_STORAGE_KEY = "plan-reading-mode";
+	const [focusMode, setFocusMode] = useState<boolean>(() =>
+		loadFlag(FOCUS_STORAGE_KEY)
+	);
 
-	const [focusMode, setFocusMode] = useState<boolean>(() => {
-		if (typeof window === "undefined") return false;
-		try {
-			return window.localStorage.getItem(FOCUS_STORAGE_KEY) === "1";
-		} catch {
-			return false;
-		}
-	});
-
-	const [readingMode, setReadingMode] = useState<boolean>(() => {
-		if (typeof window === "undefined") return false;
-		try {
-			return window.localStorage.getItem(READING_STORAGE_KEY) === "1";
-		} catch {
-			return false;
-		}
-	});
+	const [readingMode, setReadingMode] = useState<boolean>(() =>
+		loadFlag(READING_STORAGE_KEY)
+	);
 
 	const toggleFocusMode = () => {
 		setFocusMode((prev) => {
 			const next = !prev;
-			try {
-				window.localStorage.setItem(FOCUS_STORAGE_KEY, next ? "1" : "0");
-			} catch {}
+			saveFlag(FOCUS_STORAGE_KEY, next);
 			return next;
 		});
 	};
@@ -191,9 +197,7 @@ export default function PlanPage() {
 	const toggleReadingMode = () => {
 		setReadingMode((prev) => {
 			const next = !prev;
-			try {
-				window.localStorage.setItem(READING_STORAGE_KEY, next ? "1" : "0");
-			} catch {}
+			saveFlag(READING_STORAGE_KEY, next);
 			return next;
 		});
 	};
@@ -247,7 +251,6 @@ export default function PlanPage() {
 		let list = safeTasks;
 
 		if (onlyUpdated) list = list.filter((t) => Boolean(t.updatedAt));
-
 		if (q) list = list.filter((t) => taskHaystack(t).includes(q));
 
 		const byCreatedAsc = (a: Task, b: Task) =>
@@ -313,6 +316,7 @@ export default function PlanPage() {
 			};
 
 			await editPlan(payload);
+			await queryClient.invalidateQueries({ queryKey: ["plan", planId] });
 			await refetchPlan();
 			setIsEditingPlan(false);
 		} catch (e) {
@@ -346,13 +350,14 @@ export default function PlanPage() {
 		}
 	};
 
-	// outside click close plan menu (ОК: тут capture можно, потому что меню НЕ портальное и внутри ref)
+	// outside click close plan menu
 	useEffect(() => {
 		if (!isPlanMenuOpen) return;
 
 		const onPointerDown = (e: PointerEvent) => {
 			const target = e.target as Node | null;
 			if (!target) return;
+
 			if (
 				planMenuRootRef.current &&
 				!planMenuRootRef.current.contains(target)
@@ -374,6 +379,7 @@ export default function PlanPage() {
 		top: number;
 		left: number;
 	} | null>(null);
+
 	const taskMenuPortalRef = useRef<HTMLDivElement | null>(null);
 
 	const closeTaskMenu = () => {
@@ -381,7 +387,7 @@ export default function PlanPage() {
 		setTaskMenuPos(null);
 	};
 
-	// FIX: закрываем ТОЛЬКО если кликнули ВНЕ портального меню
+	// FIX: close only if pointerdown outside portal
 	useEffect(() => {
 		if (!openTaskMenuId) return;
 
@@ -389,9 +395,7 @@ export default function PlanPage() {
 			const target = e.target as Node | null;
 			if (!target) return;
 
-			// если клик внутри меню — НЕ закрываем
 			if (taskMenuPortalRef.current?.contains(target)) return;
-
 			closeTaskMenu();
 		};
 
@@ -455,7 +459,7 @@ export default function PlanPage() {
 			if (e.key === "Escape") {
 				closeTaskMenu();
 				setIsPlanMenuOpen(false);
-				(searchRef.current as HTMLInputElement | null)?.blur();
+				searchRef.current?.blur();
 			}
 
 			if (
@@ -566,7 +570,8 @@ export default function PlanPage() {
 									onClick={toggleReadingMode}
 									title={
 										readingMode ? "Exit reading mode (R)" : "Reading mode (R)"
-									}>
+									}
+									aria-pressed={readingMode}>
 									<i
 										className={`fa-solid ${
 											readingMode ? "fa-align-left" : "fa-align-justify"
@@ -580,7 +585,8 @@ export default function PlanPage() {
 									type="button"
 									className={styles.ghostBtn}
 									onClick={toggleFocusMode}
-									title={focusMode ? "Exit focus mode (F)" : "Focus mode (F)"}>
+									title={focusMode ? "Exit focus mode (F)" : "Focus mode (F)"}
+									aria-pressed={focusMode}>
 									<i
 										className={`fa-solid ${
 											focusMode ? "fa-compress" : "fa-expand"
@@ -950,7 +956,10 @@ export default function PlanPage() {
 																			top: taskMenuPos.top,
 																			left: taskMenuPos.left,
 																		}}
+																		/* FIX: гасим pointerdown, чтобы глобальный capture не закрывал меню
+																		   до выполнения handler’ов кнопок */
 																		onPointerDown={(e) => {
+																			e.preventDefault();
 																			e.stopPropagation();
 																		}}
 																		onClick={(e) => {
@@ -962,7 +971,8 @@ export default function PlanPage() {
 																			className={styles.menuItem}
 																			role="menuitem"
 																			disabled={isDeletingPlan}
-																			onClick={(e) => {
+																			/* FIX: делаем действие на pointerdown (надёжнее при capture) */
+																			onPointerDown={(e) => {
 																				e.preventDefault();
 																				e.stopPropagation();
 																				closeTaskMenu();
@@ -990,15 +1000,24 @@ export default function PlanPage() {
 																			className={`${styles.menuItem} ${styles.menuItemDanger}`}
 																			role="menuitem"
 																			disabled={isDeletingPlan}
-																			onClick={async (e) => {
+																			onPointerDown={async (e) => {
 																				e.preventDefault();
 																				e.stopPropagation();
 																				closeTaskMenu();
+
 																				await deleteTaskHandler(
 																					planId,
 																					task.id,
-																					() => refetchTasks()
+																					async () => {
+																						await queryClient.invalidateQueries(
+																							{
+																								queryKey: ["tasks", planId],
+																							}
+																						);
+																						await refetchTasks();
+																					}
 																				);
+
 																				if (editingTaskId === task.id)
 																					setEditingTaskId(null);
 																			}}>

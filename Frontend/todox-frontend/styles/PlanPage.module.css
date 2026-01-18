@@ -149,6 +149,10 @@
 	align-items: center;
 	gap: 10px;
 	flex: 0 0 auto;
+
+	/* FIX: чтобы кнопки Reading/Focus всегда кликабельны */
+	position: relative;
+	z-index: 50;
 }
 
 .iconBtn {
@@ -194,7 +198,7 @@
 /* plan menu */
 .menuRoot {
 	position: relative;
-	z-index: 50;
+	z-index: 60;
 }
 
 .menu {
@@ -528,7 +532,7 @@
 .card {
 	border-radius: var(--r);
 	background: rgba(255, 255, 255, 0.03);
-	border: 1px solid rgba(255, 255, 255, 0.06); /* тонко, без “рамочного” ощущения */
+	border: 1px solid rgba(255, 255, 255, 0.06);
 	padding: 14px 14px;
 }
 
