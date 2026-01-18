@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -32,12 +33,14 @@ namespace Plans.API.EndPoints
             });
             endpoint.MapPost("plans/{planId}/tasks/Create", async (Guid planId, CreateTaskRequest request, IMediator mediator, CancellationToken cancellationToken) =>
             {
-                await mediator.Send(new TaskCreateCommand(request, planId), cancellationToken);
+                var result = await mediator.Send(new TaskCreateCommand(request, planId), cancellationToken);
+                if (!result.IsSuccess) return Results.BadRequest(result.Errors);
                 return Results.Ok($"Task was created!!!");
             });
             endpoint.MapPut("plans/{planId}/tasks/{taskId}/Update", async (Guid planId, Guid taskId, TaskDto request, IMediator mediator, CancellationToken cancellationToken) =>
             {
-                await mediator.Send(new TaskUpdateCommand(request, planId, taskId), cancellationToken);
+                var result = await mediator.Send(new TaskUpdateCommand(request, planId, taskId), cancellationToken);
+                if (!result.IsSuccess) return Results.BadRequest(result.Errors);
                 return Results.Ok($"Task {request.Id} was updated!!!");
             });
             endpoint.MapDelete("plans/{planId}/tasks/{taskId}/Delete", async (Guid planId, Guid taskId, IMediator mediator, CancellationToken cancellationToken) =>

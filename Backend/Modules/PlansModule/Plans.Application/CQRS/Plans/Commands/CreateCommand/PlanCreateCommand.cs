@@ -1,10 +1,11 @@
 using System;
 using MediatR;
 using Plans.Core.DTO.Request;
+using Plans.Core.Entity;
 
 namespace Plans.Application.CQRS.Plans.Commands.CreateCommand;
 
-public class PlanCreateCommand(CreatePlanRequest request) : IRequest
+public class PlanCreateCommand(CreatePlanRequest request) : IRequest<Result>
 {
     public CreatePlanRequest Request = request;
 }

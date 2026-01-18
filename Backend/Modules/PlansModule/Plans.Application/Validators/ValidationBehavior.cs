@@ -1,16 +1,19 @@
 using FluentValidation;
 using MediatR;
+using Plans.Core.Entity;
 
 namespace Plans.Application.Validators;
 
-public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public sealed class ValidationBehavior<TRequest, TResponse>
+    : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators;
 
     public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
-        => _validators = validators;
-
+    {
+        _validators = validators;
+    }
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
@@ -29,9 +32,11 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
                 .ToList();
 
             if (failures.Count != 0)
-                throw new ValidationException(failures);
+            {
+                return (TResponse)(object)Result.ValidationError(failures);
+            }
         }
-
         return await next();
     }
 }
+
