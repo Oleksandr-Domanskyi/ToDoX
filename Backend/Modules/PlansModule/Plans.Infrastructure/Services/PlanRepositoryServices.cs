@@ -71,7 +71,6 @@ public class PlanRepositoryServices : IPlanRepositoryServices
 
         if (model is null)
             return Result.Fail<PlanDto>($"Plan with id {id} not found");
-
         return Result.Ok(PlatToDtoMapper.MapToDto(model));
     }
 

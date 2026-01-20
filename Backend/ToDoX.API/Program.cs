@@ -3,9 +3,13 @@ using ToDoX.Infrastructure.Extensions;
 using Plans.API.Extensions;
 using Plans.API.EndPoints;
 using Plans.Web.Extensions;
+using Plans.Infrastructure.Extentions;
+using Account.API.Extensions;
+using Account.API.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddAccountModule(builder.Configuration);
 builder.Services.AddPlansModule(builder.Configuration);
 builder.Services.AddSharedInfrastructure();
 
@@ -32,6 +36,10 @@ var app = builder.Build();
 app.UseCors("Frontend");
 app.UsePlansExceptionHandling();
 app.AddPlanModuleEndpoints();
+app.AddAccountEndpoints();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {

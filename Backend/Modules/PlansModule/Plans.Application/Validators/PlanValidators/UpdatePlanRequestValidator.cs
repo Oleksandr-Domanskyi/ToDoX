@@ -17,7 +17,7 @@ namespace Plans.Application.Validators.PlanValidators
 
             RuleFor(x => x.Name)
                 .NotEmpty()
-                .MaximumLength(150)
+                .MaximumLength(50)
                 .WithMessage("Name must be between 1 and 150 characters.");
 
             RuleFor(x => x.Description)

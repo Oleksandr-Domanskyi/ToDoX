@@ -13,7 +13,7 @@ public sealed class CreateTaskRequestValidator : AbstractValidator<CreateTaskReq
 
         RuleFor(x => x.Title)
             .NotEmpty()
-            .MaximumLength(250);
+            .MaximumLength(50);
 
         RuleFor(x => x.Blocks)
             .NotNull();

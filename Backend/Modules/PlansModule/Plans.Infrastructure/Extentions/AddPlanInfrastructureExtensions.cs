@@ -7,11 +7,14 @@ using Plans.Infrastructure.Services;
 using Plans.Infrastructure.Services.IServices;
 using ToDoX.Infrastructure.Database;
 using ToDoX.Infrastructure.Extensions;
+using ToDoX.Infrastructure.UnitOfWork;
 
 namespace Plans.Infrastructure.Extentions;
 
 public static class AddPlanInfrastructureExtensions
 {
+    public static void AddSharedInfrastructure(this IServiceCollection services)
+        => services.AddScoped(typeof(IUnitOfWork<,>), typeof(UnitOfWork<,>));
     public static void AddPlanInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDatabaseContext<PlanShemeDbContext>(configuration);

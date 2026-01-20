@@ -1,0 +1,16 @@
+using System;
+using Account.Core.DTO.Request;
+using Account.Core.Entity;
+using FluentResults;
+using ToDoX.Infrastructure.IRepositoryManager;
+
+namespace Account.Infrastructure.Repositories;
+
+public interface IUserRepositories : IRepository
+{
+    Task<Result<User>> GetUserAsync(string email);
+    Task<Result> LoginAsync(LoginRequest request);
+    Task<Result> CreateUserAsync(CreateUserRequest request);
+    Task<Result> UpdateUserInformationAsync(string userId, UpdateUserInformationRequest request);
+    Task<Result> DeleteUserAsync(string email);
+}

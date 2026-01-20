@@ -15,7 +15,7 @@ namespace Plans.Application.Validators.TaskValidators
         public TaskDtoValidator()
         {
             RuleFor(x => x.Id).NotEmpty();
-            RuleFor(x => x.Title).Length(0, 250).WithMessage("Title must be between 1 and 250 characters.");
+            RuleFor(x => x.Title).Length(0, 50).WithMessage("Title must be between 1 and 250 characters.");
             RuleFor(x => x.CreatedAt).NotEmpty();
 
             RuleForEach(x => x.Blocks).SetInheritanceValidator(v =>
