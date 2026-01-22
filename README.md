@@ -20,8 +20,8 @@ application built with Next.js, connected via strict API contracts.
 
 The system provides:
 
--   A multi-module backend with CQRS and Clean Architecture\
--   A Next.js frontend (App Router) with a feature-based structure\
+-   A multi-module backend with CQRS and Clean Architecture
+-   A Next.js frontend (App Router) with a feature-based structure
 -   A unified task block format shared between backend and frontend
 
 ------------------------------------------------------------------------
@@ -43,9 +43,9 @@ The system provides:
 ### Principles
 
 -   The frontend is unaware of backend internals and communicates only
-    via HTTP contracts\
--   The backend is split into modules with dedicated layers:\
-    API → Application → Core → Infrastructure\
+    via HTTP contracts
+-   The backend is split into modules with dedicated layers:
+    API → Application → Core → Infrastructure
 -   All dependencies point inward (Dependency Inversion)
 
 ------------------------------------------------------------------------
@@ -72,9 +72,9 @@ The system provides:
 
 Each module is an isolated vertical slice:
 
--   API --- HTTP endpoints\
--   Application --- CQRS, MediatR, validation\
--   Core --- domain model\
+-   API --- HTTP endpoints
+-   Application --- CQRS, MediatR, validation
+-   Core --- domain model
 -   Infrastructure --- EF Core, repositories, Identity
 
 ------------------------------------------------------------------------
@@ -95,9 +95,9 @@ codes in the API layer.
 
 The Account Module is responsible for:
 
--   User registration\
--   Login and refresh tokens\
--   Profile management\
+-   User registration
+-   Login and refresh tokens
+-   Profile management
 -   Authorization policies
 
 ------------------------------------------------------------------------
@@ -106,14 +106,14 @@ The Account Module is responsible for:
 
 Base path: `/account`
 
-  Method   URL                 Purpose
-  -------- ------------------- -------------------
-  POST     /account/login      Authentication
-  POST     /account/refresh    Token refresh
-  GET      /account/by-email   Get user by email
-  POST     /account            Create user
-  PUT      /account/{id}       Update profile
-  DELETE   /account            Delete user
+| Method | URL               | Purpose           |
+|--------|-------------------|-------------------|
+| POST   | /account/login    | Authentication    |
+| POST   | /account/refresh  | Token refresh     |
+| GET    | /account/by-email | Get user by email |
+| POST   | /account          | Create user       |
+| PUT    | /account/{id}     | Update profile    |
+| DELETE | /account          | Delete user       |
 
 ------------------------------------------------------------------------
 
@@ -121,7 +121,7 @@ Base path: `/account`
 
 CQRS is used:
 
--   Each operation is a Command or Query\
+-   Each operation is a Command or Query
 -   Validation is executed via the MediatR pipeline
 
 Example:
@@ -138,8 +138,8 @@ Extends `IdentityUser`.
 
 Fields:
 
--   RegisteredAtUtc\
--   LastUpdatedAtUtc\
+-   RegisteredAtUtc
+-   LastUpdatedAtUtc
 -   accountImage : UserImage
 
 The `UserImage` value object encapsulates the image URL.
@@ -148,10 +148,10 @@ The `UserImage` value object encapsulates the image URL.
 
 ### 4.5 Security
 
--   Bearer Token Authentication\
+-   Bearer Token Authentication
 -   Authorization policies:
-    -   RequireAdmin --- Admin role\
-    -   User --- Default / Pro / Business subscription\
+    -   RequireAdmin --- Admin role
+    -   User --- Default / Pro / Business subscription
     -   PaidUser --- Pro / Business
 
 Passwords:
@@ -167,9 +167,9 @@ Passwords:
 
 The Plans Module provides:
 
--   CRUD for Plan\
--   CRUD for Task\
--   Task block support\
+-   CRUD for Plan
+-   CRUD for Task
+-   Task block support
 -   Block structure validation
 
 ------------------------------------------------------------------------
@@ -178,23 +178,24 @@ The Plans Module provides:
 
 #### Plans
 
-  Method   URL
-  -------- --------------------
-  GET      /plans
-  GET      /plans/{id}
-  POST     /plans/Create
-  PUT      /plans/Update
-  DELETE   /plans/Delete/{id}
+  | Method | URL                  |
+|--------|----------------------|
+| GET    | `/plans`             |
+| GET    | `/plans/{id}`        |
+| POST   | `/plans/Create`      |
+| PUT    | `/plans/Update`      |
+| DELETE | `/plans/Delete/{id}` |
 
 #### Tasks
 
-  Method   URL
-  -------- ---------------------------------------
-  GET      /plans/{planId}/tasks
-  GET      /plans/{planId}/tasks/{id}
-  POST     /plans/{planId}/tasks/Create
-  PUT      /plans/{planId}/tasks/{taskId}/Update
-  DELETE   /plans/{planId}/tasks/{taskId}/Delete
+| Method | URL                                           |
+|--------|-----------------------------------------------|
+| GET    | `/plans/{planId}/tasks`                       |
+| GET    | `/plans/{planId}/tasks/{id}`                  |
+| POST   | `/plans/{planId}/tasks/Create`                |
+| PUT    | `/plans/{planId}/tasks/{taskId}/Update`      |
+| DELETE | `/plans/{planId}/tasks/{taskId}/Delete`      |
+
 
 ------------------------------------------------------------------------
 
@@ -204,11 +205,11 @@ The Plans Module provides:
 
 Fields:
 
--   Id\
--   Name\
--   Description\
--   Tasks\
--   CreatedAt\
+-   Id
+-   Name
+-   Description
+-   Tasks
+-   CreatedAt
 -   UpdatedAt
 
 ------------------------------------------------------------------------
@@ -217,20 +218,20 @@ Fields:
 
 Fields:
 
--   Id\
--   PlanId\
--   Title\
--   IsCompleted\
--   Blocks\
--   CreatedAt\
+-   Id
+-   PlanId
+-   Title
+-   IsCompleted
+-   Blocks
+-   CreatedAt
 -   UpdatedAt
 
 Domain methods:
 
--   AddTextBlock\
--   AddImageBlock\
--   AddCheckListBlock\
--   AddCodeBlock\
+-   AddTextBlock
+-   AddImageBlock
+-   AddCheckListBlock
+-   AddCodeBlock
 -   RemoveBlockAt
 
 ------------------------------------------------------------------------
@@ -241,16 +242,16 @@ All blocks inherit from `TaskDescriptionBlock`.
 
 Supported types:
 
--   text\
--   image\
--   checklist\
+-   text
+-   image
+-   checklist
 -   code
 
 Common fields:
 
--   Order --- list order\
--   Row --- grid row\
--   Position --- left \| right \| full
+-   Order --- list order
+-   Row --- grid row
+-   Position --- left | right | full
 
 JSON example:
 
@@ -272,12 +273,12 @@ Domain service.
 
 Algorithm:
 
-1.  Deletes all existing task blocks\
+1.  Deletes all existing task blocks
 2.  Recreates blocks from DTO
 
 Purpose:
 
--   Guarantee deterministic ordering\
+-   Guarantee deterministic ordering
 -   Eliminate block state desynchronization
 
 ------------------------------------------------------------------------
@@ -286,10 +287,10 @@ Purpose:
 
 ### 6.1 Technology Stack
 
--   Next.js (App Router)\
--   TypeScript\
--   TanStack React Query\
--   TipTap Rich Text\
+-   Next.js (App Router)
+-   TypeScript
+-   TanStack React Query
+-   TipTap Rich Text
 -   dnd-kit (Drag & Drop)
 
 ------------------------------------------------------------------------
@@ -312,8 +313,8 @@ Feature-based architecture:
 
 `shared/api/http.ts`
 
--   Base URL: `NEXT_PUBLIC_API_URL`\
--   Unified error handling\
+-   Base URL: `NEXT_PUBLIC_API_URL`
+-   Unified error handling
 -   All requests return strictly typed data
 
 ------------------------------------------------------------------------
@@ -332,25 +333,25 @@ Feature-based architecture:
 
 ### 8.1 RichText
 
--   TipTap\
+-   TipTap
 -   JSON document serialized to string
 
 Components:
 
--   RichTextEditor\
--   RichTextViewer\
+-   RichTextEditor
+-   RichTextViewer
 -   ReadOnlyRichText
 
 ------------------------------------------------------------------------
 
 ### 8.2 Code Blocks
 
--   highlight.js\
+-   highlight.js
 -   ts, js, csharp, json
 
 Components:
 
--   CodeEditor\
+-   CodeEditor
 -   CodeViewer
 
 ------------------------------------------------------------------------
@@ -382,20 +383,20 @@ Components:
 
 The system guarantees:
 
--   Isolation of backend modules\
--   No Infrastructure leakage into Application\
--   Strict DTO contracts between frontend and backend\
--   Deterministic block model\
+-   Isolation of backend modules
+-   No Infrastructure leakage into Application
+-   Strict DTO contracts between frontend and backend
+-   Deterministic block model
 -   Full state synchronization via React Query
 
 ------------------------------------------------------------------------
 
 ## 11. Future Improvements
 
-1.  Add API versioning\
-2.  Add optimistic updates\
-3.  Extract blocks into a separate bounded context\
-4.  Add audit logs for task changes\
+1.  Add API versioning
+2.  Add optimistic updates
+3.  Extract blocks into a separate bounded context
+4.  Add audit logs for task changes
 5.  Add autosave
 
 ------------------------------------------------------------------------
@@ -404,9 +405,9 @@ The system guarantees:
 
 ToDoX is a full-featured modular system with:
 
--   Clean backend architecture\
--   Modern frontend with rich UI\
+-   Clean backend architecture
+-   Modern frontend with rich UI
 -   A strict data model for tasks and blocks
 
-This documentation describes the system as a single end-to-end flow:\
+This documentation describes the system as a single end-to-end flow:
 from UI to the database.
