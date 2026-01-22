@@ -1,253 +1,260 @@
-# ToDoX — Архітектурна документація
+# ToDoX — Architecture Documentation
 
-## 1. Призначення системи
+## View
+<h3 align="center">Plan Page</h3>
+<img width="1280" height="636" alt="image" src="https://github.com/user-attachments/assets/355f2a6e-4e3c-4b32-b4a0-665451eb3e2e" />
 
-ToDoX — це модульна система управління планами та задачами з підтримкою багатого опису задач через блоки (text, image, checklist, code). Архітектура поділена на незалежні backend-модулі та frontend-застосунок на Next.js, об’єднані строгими API-контрактами.
+<h3 align="center">Home Page</h3>
+<img width="1915" height="853" alt="image" src="https://github.com/user-attachments/assets/8fa3e2a3-a5c5-455e-95c1-b8f718162341" />
 
-Система реалізує:
+<h3 align="center">Edit Mode</h3>
+<img width="1280" height="402" alt="image" src="https://github.com/user-attachments/assets/49317708-cda4-40a1-9a6e-c4d554ea5c0b" />
 
-* Багатомодульний backend з CQRS та Clean Architecture
-* Frontend на Next.js (App Router) з feature-based структурою
-* Уніфікований формат блоків задач, спільний для backend і frontend
 
----
+## 1. System Purpose
 
-## 2. Загальна архітектурна картина
+ToDoX is a modular system for managing plans and tasks with support for
+rich task descriptions using blocks (text, image, checklist, code). The
+architecture is split into independent backend modules and a frontend
+application built with Next.js, connected via strict API contracts.
 
-### 2.1 Логічна схема
+The system provides:
 
-```
-[ Next.js Frontend ]
-        |
-        |  HTTP / JSON
-        v
-[ ToDoX.API (Gateway) ]
-        |
-        +--> Account Module (Identity, Auth)
-        |
-        +--> Plans Module (Plans, Tasks, Blocks)
-```
+-   A multi-module backend with CQRS and Clean Architecture\
+-   A Next.js frontend (App Router) with a feature-based structure\
+-   A unified task block format shared between backend and frontend
 
-### Принципи
+------------------------------------------------------------------------
 
-* Frontend не знає про внутрішню реалізацію backend і працює лише через HTTP-контракти
-* Backend поділений на модулі з власними шарами:
-  API → Application → Core → Infrastructure
-* Усі залежності спрямовані всередину (Dependency Inversion)
+## 2. Overall Architecture Overview
 
----
+### 2.1 Logical Diagram
 
-## 3. Backend — Загальна архітектура
+    [ Next.js Frontend ]
+            |
+            |  HTTP / JSON
+            v
+    [ ToDoX.API (Gateway) ]
+            |
+            +--> Account Module (Identity, Auth)
+            |
+            +--> Plans Module (Plans, Tasks, Blocks)
 
-### 3.1 Структура Backend
+### Principles
 
-```
-Backend
- ├── Modules
- │    ├── AccountModule
- │    │    ├── Account.API
- │    │    ├── Account.Application
- │    │    ├── Account.Core
- │    │    └── Account.Infrastructure
- │    ├── PlansModule
- │    │    ├── Plans.API
- │    │    ├── Plans.Application
- │    │    ├── Plans.Core
- │    │    └── Plans.Infrastructure
- │    └── SharedModules
- │         └── ToDoX.Infrastructure
- └── ToDoX.API (composition root)
-```
+-   The frontend is unaware of backend internals and communicates only
+    via HTTP contracts\
+-   The backend is split into modules with dedicated layers:\
+    API → Application → Core → Infrastructure\
+-   All dependencies point inward (Dependency Inversion)
 
-Кожен модуль — ізольована вертикаль:
+------------------------------------------------------------------------
 
-* API — HTTP endpoints
-* Application — CQRS, MediatR, валідація
-* Core — доменна модель
-* Infrastructure — EF Core, репозиторії, Identity
+## 3. Backend --- General Architecture
 
----
+### 3.1 Backend Structure
 
-### 3.2 Потік запиту
+    Backend
+     ├── Modules
+     │    ├── AccountModule
+     │    │    ├── Account.API
+     │    │    ├── Account.Application
+     │    │    ├── Account.Core
+     │    │    └── Account.Infrastructure
+     │    ├── PlansModule
+     │    │    ├── Plans.API
+     │    │    ├── Plans.Application
+     │    │    ├── Plans.Core
+     │    │    └── Plans.Infrastructure
+     │    └── SharedModules
+     │         └── ToDoX.Infrastructure
+     └── ToDoX.API (composition root)
 
-```
-HTTP → Endpoint → Command/Query → MediatR → Handler
-     → Domain/Core → Infrastructure → Result → HTTP Response
-```
+Each module is an isolated vertical slice:
 
-Помилки повертаються через `FluentResults.Result` та мапляться у HTTP-коди в API-шарі.
+-   API --- HTTP endpoints\
+-   Application --- CQRS, MediatR, validation\
+-   Core --- domain model\
+-   Infrastructure --- EF Core, repositories, Identity
 
----
+------------------------------------------------------------------------
 
-## 4. Account Module — Аутентифікація і користувачі
+### 3.2 Request Flow
 
-### 4.1 Призначення
+    HTTP → Endpoint → Command/Query → MediatR → Handler
+         → Domain/Core → Infrastructure → Result → HTTP Response
 
-Account Module відповідає за:
+Errors are returned via `FluentResults.Result` and mapped to HTTP status
+codes in the API layer.
 
-* Реєстрацію користувачів
-* Логін і refresh-токени
-* Управління профілем
-* Політики авторизації
+------------------------------------------------------------------------
 
----
+## 4. Account Module --- Authentication and Users
 
-### 4.2 API-контракти
+### 4.1 Purpose
 
-Базовий шлях: `/account`
+The Account Module is responsible for:
 
-| Метод  | URL               | Призначення           |
-| ------ | ----------------- | --------------------- |
-| POST   | /account/login    | Аутентифікація        |
-| POST   | /account/refresh  | Оновлення токена      |
-| GET    | /account/by-email | Отримання користувача |
-| POST   | /account          | Створення користувача |
-| PUT    | /account/{id}     | Оновлення профілю     |
-| DELETE | /account          | Видалення користувача |
+-   User registration\
+-   Login and refresh tokens\
+-   Profile management\
+-   Authorization policies
 
----
+------------------------------------------------------------------------
 
-### 4.3 Архітектура Application-шару
+### 4.2 API Contracts
 
-Використовується CQRS:
+Base path: `/account`
 
-* Кожна операція — Command або Query
-* Валідація виконується через MediatR Pipeline
+  Method   URL                 Purpose
+  -------- ------------------- -------------------
+  POST     /account/login      Authentication
+  POST     /account/refresh    Token refresh
+  GET      /account/by-email   Get user by email
+  POST     /account            Create user
+  PUT      /account/{id}       Update profile
+  DELETE   /account            Delete user
 
-Приклад:
+------------------------------------------------------------------------
 
-```
-AccountEndpoint → LoginCommand → LoginHandler → UserRepositoryServices
-```
+### 4.3 Application Layer Architecture
 
----
+CQRS is used:
 
-### 4.4 Доменні сутності
+-   Each operation is a Command or Query\
+-   Validation is executed via the MediatR pipeline
+
+Example:
+
+    AccountEndpoint → LoginCommand → LoginHandler → UserRepositoryServices
+
+------------------------------------------------------------------------
+
+### 4.4 Domain Entities
 
 #### User
 
-Розширює `IdentityUser`.
+Extends `IdentityUser`.
 
-Поля:
+Fields:
 
-* RegisteredAtUtc
-* LastUpdatedAtUtc
-* accountImage : UserImage
+-   RegisteredAtUtc\
+-   LastUpdatedAtUtc\
+-   accountImage : UserImage
 
-Value Object `UserImage` інкапсулює URL зображення.
+The `UserImage` value object encapsulates the image URL.
 
----
+------------------------------------------------------------------------
 
-### 4.5 Безпека
+### 4.5 Security
 
-* Bearer Token Authentication
-* Політики:
+-   Bearer Token Authentication\
+-   Authorization policies:
+    -   RequireAdmin --- Admin role\
+    -   User --- Default / Pro / Business subscription\
+    -   PaidUser --- Pro / Business
 
-  * RequireAdmin — роль Admin
-  * User — підписка Default / Pro / Business
-  * PaidUser — Pro / Business
+Passwords:
 
-Паролі:
+-   Minimum 12 characters\
+-   Upper, Lower, Digit, NonAlphanumeric required
 
-* Мінімум 12 символів
-* Upper, Lower, Digit, NonAlphanumeric — обов’язкові
+------------------------------------------------------------------------
 
----
+## 5. Plans Module --- Plans and Tasks
 
-## 5. Plans Module — Плани і задачі
+### 5.1 Purpose
 
-### 5.1 Призначення
+The Plans Module provides:
 
-Plans Module реалізує:
+-   CRUD for Plan\
+-   CRUD for Task\
+-   Task block support\
+-   Block structure validation
 
-* CRUD для Plan
-* CRUD для Task
-* Підтримку блоків задач
-* Валідацію структури блоків
+------------------------------------------------------------------------
 
----
-
-### 5.2 API-контракти
+### 5.2 API Contracts
 
 #### Plans
 
-| Метод  | URL                |
-| ------ | ------------------ |
-| GET    | /plans             |
-| GET    | /plans/{id}        |
-| POST   | /plans/Create      |
-| PUT    | /plans/Update      |
-| DELETE | /plans/Delete/{id} |
+  Method   URL
+  -------- --------------------
+  GET      /plans
+  GET      /plans/{id}
+  POST     /plans/Create
+  PUT      /plans/Update
+  DELETE   /plans/Delete/{id}
 
 #### Tasks
 
-| Метод  | URL                                   |
-| ------ | ------------------------------------- |
-| GET    | /plans/{planId}/tasks                 |
-| GET    | /plans/{planId}/tasks/{id}            |
-| POST   | /plans/{planId}/tasks/Create          |
-| PUT    | /plans/{planId}/tasks/{taskId}/Update |
-| DELETE | /plans/{planId}/tasks/{taskId}/Delete |
+  Method   URL
+  -------- ---------------------------------------
+  GET      /plans/{planId}/tasks
+  GET      /plans/{planId}/tasks/{id}
+  POST     /plans/{planId}/tasks/Create
+  PUT      /plans/{planId}/tasks/{taskId}/Update
+  DELETE   /plans/{planId}/tasks/{taskId}/Delete
 
----
+------------------------------------------------------------------------
 
-### 5.3 Доменні сутності
+### 5.3 Domain Entities
 
 #### PlanEntity
 
-Поля:
+Fields:
 
-* Id
-* Name
-* Description
-* Tasks
-* CreatedAt
-* UpdatedAt
+-   Id\
+-   Name\
+-   Description\
+-   Tasks\
+-   CreatedAt\
+-   UpdatedAt
 
----
+------------------------------------------------------------------------
 
 #### TaskEntity
 
-Поля:
+Fields:
 
-* Id
-* PlanId
-* Title
-* IsCompleted
-* Blocks
-* CreatedAt
-* UpdatedAt
+-   Id\
+-   PlanId\
+-   Title\
+-   IsCompleted\
+-   Blocks\
+-   CreatedAt\
+-   UpdatedAt
 
-Методи домену:
+Domain methods:
 
-* AddTextBlock
-* AddImageBlock
-* AddCheckListBlock
-* AddCodeBlock
-* RemoveBlockAt
+-   AddTextBlock\
+-   AddImageBlock\
+-   AddCheckListBlock\
+-   AddCodeBlock\
+-   RemoveBlockAt
 
----
+------------------------------------------------------------------------
 
-### 5.4 Модель блоків задач
+### 5.4 Task Block Model
 
-Усі блоки наслідуються від `TaskDescriptionBlock`.
+All blocks inherit from `TaskDescriptionBlock`.
 
-Підтримувані типи:
+Supported types:
 
-* text
-* image
-* checklist
-* code
+-   text\
+-   image\
+-   checklist\
+-   code
 
-Загальні поля:
+Common fields:
 
-* Order — порядок у списку
-* Row — рядок сітки
-* Position — left | right | full
+-   Order --- list order\
+-   Row --- grid row\
+-   Position --- left \| right \| full
 
-Приклад JSON:
+JSON example:
 
-```json
+``` json
 {
   "type": "text",
   "Row": 0,
@@ -257,157 +264,149 @@ Plans Module реалізує:
 }
 ```
 
----
+------------------------------------------------------------------------
 
 ### 5.5 TaskBlockUpdater
 
-Доменний сервіс.
+Domain service.
 
-Алгоритм:
+Algorithm:
 
-1. Видаляє всі існуючі блоки задачі
-2. Пересоздає блоки з DTO
+1.  Deletes all existing task blocks\
+2.  Recreates blocks from DTO
 
-Призначення:
+Purpose:
 
-* Гарантувати детермінований порядок
-* Усунути розсинхронізацію стану блоків
+-   Guarantee deterministic ordering\
+-   Eliminate block state desynchronization
 
----
+------------------------------------------------------------------------
 
-## 6. Frontend — Загальна архітектура
+## 6. Frontend --- General Architecture
 
-### 6.1 Технологічний стек
+### 6.1 Technology Stack
 
-* Next.js (App Router)
-* TypeScript
-* TanStack React Query
-* TipTap Rich Text
-* dnd-kit (Drag & Drop)
+-   Next.js (App Router)\
+-   TypeScript\
+-   TanStack React Query\
+-   TipTap Rich Text\
+-   dnd-kit (Drag & Drop)
 
----
+------------------------------------------------------------------------
 
-### 6.2 Структура проєкту
+### 6.2 Project Structure
 
-```
-app/
-features/
-shared/
-```
+    app/
+    features/
+    shared/
 
-Feature-based архітектура:
+Feature-based architecture:
 
-* кожна бізнес-область має власні api, model і ui
+-   each business domain has its own api, model, and ui
 
----
+------------------------------------------------------------------------
 
-## 7. Frontend — Інтеграція з Backend
+## 7. Frontend --- Backend Integration
 
-### 7.1 HTTP-клієнт
+### 7.1 HTTP Client
 
 `shared/api/http.ts`
 
-* Базовий URL: `NEXT_PUBLIC_API_URL`
-* Уніфікована обробка помилок
-* Усі запити повертають строго типізовані дані
+-   Base URL: `NEXT_PUBLIC_API_URL`\
+-   Unified error handling\
+-   All requests return strictly typed data
 
----
+------------------------------------------------------------------------
 
 ### 7.2 React Query
 
-* QueryKey:
+-   Query keys:
+    -   `["plans"]`
+    -   `["plan", id]`
+    -   `["tasks", planId]`
+-   Invalidation after create / update / delete
 
-  * `["plans"]`
-  * `["plan", id]`
-  * `["tasks", planId]`
+------------------------------------------------------------------------
 
-* Інвалідація після create / update / delete
-
----
-
-## 8. Rich Text і Code-підсистема
+## 8. Rich Text and Code Subsystem
 
 ### 8.1 RichText
 
-* TipTap
-* JSON-документ, серіалізований у рядок
+-   TipTap\
+-   JSON document serialized to string
 
-Компоненти:
+Components:
 
-* RichTextEditor
-* RichTextViewer
-* ReadOnlyRichText
+-   RichTextEditor\
+-   RichTextViewer\
+-   ReadOnlyRichText
 
----
+------------------------------------------------------------------------
 
-### 8.2 Code-блоки
+### 8.2 Code Blocks
 
-* highlight.js
-* ts, js, csharp, json
+-   highlight.js\
+-   ts, js, csharp, json
 
-Компоненти:
+Components:
 
-* CodeEditor
-* CodeViewer
+-   CodeEditor\
+-   CodeViewer
 
----
+------------------------------------------------------------------------
 
-## 9. End-to-End потік
+## 9. End-to-End Flow
 
-### Створення задачі
+### Task Creation
 
-```
-UI → POST /plans/{planId}/tasks/Create
-   → MediatR Command
-   → Handler
-   → EF Core
-   → SaveChanges
-   → invalidateQueries(["tasks", planId])
-```
+    UI → POST /plans/{planId}/tasks/Create
+       → MediatR Command
+       → Handler
+       → EF Core
+       → SaveChanges
+       → invalidateQueries(["tasks", planId])
 
----
+------------------------------------------------------------------------
 
-### Редагування задачі
+### Task Update
 
-```
-PUT /plans/{planId}/tasks/{taskId}/Update
-→ Handler → TaskBlockUpdater
-→ Повна пересборка блоків
-→ SaveChanges
-→ invalidateQueries
-```
+    PUT /plans/{planId}/tasks/{taskId}/Update
+    → Handler → TaskBlockUpdater
+    → Full block rebuild
+    → SaveChanges
+    → invalidateQueries
 
----
+------------------------------------------------------------------------
 
-## 10. Гарантії архітектури
+## 10. Architectural Guarantees
 
-Система гарантує:
+The system guarantees:
 
-* Ізоляцію backend-модулів
-* Відсутність витоків Infrastructure у Application
-* Строгі DTO-контракти між frontend і backend
-* Детерміновану модель блоків
-* Повну синхронізацію стану через React Query
+-   Isolation of backend modules\
+-   No Infrastructure leakage into Application\
+-   Strict DTO contracts between frontend and backend\
+-   Deterministic block model\
+-   Full state synchronization via React Query
 
----
+------------------------------------------------------------------------
 
-## 11. Рекомендації з розвитку
+## 11. Future Improvements
 
-1. Додати версіонування API
-2. Додати optimistic updates
-3. Винести блоки в окремий bounded context
-4. Додати аудит-логи змін
-5. Додати автозбереження
+1.  Add API versioning\
+2.  Add optimistic updates\
+3.  Extract blocks into a separate bounded context\
+4.  Add audit logs for task changes\
+5.  Add autosave
 
----
+------------------------------------------------------------------------
 
-## 12. Висновок
+## 12. Conclusion
 
-ToDoX — це повнофункціональна модульна система з:
+ToDoX is a full-featured modular system with:
 
-* Чистою backend-архітектурою
-* Сучасним frontend з rich UI
-* Строгою моделлю даних задач і блоків
+-   Clean backend architecture\
+-   Modern frontend with rich UI\
+-   A strict data model for tasks and blocks
 
-Документація описує систему як єдиний наскрізний контур:
-від UI до бази даних.
+This documentation describes the system as a single end-to-end flow:\
+from UI to the database.
