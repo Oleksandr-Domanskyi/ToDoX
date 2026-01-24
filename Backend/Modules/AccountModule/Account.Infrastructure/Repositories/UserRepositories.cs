@@ -3,6 +3,7 @@ using Account.Core.DTO.Request;
 using Account.Core.Entity;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using ToDoX.Infrastructure.IRepositoryManager;
 
 namespace Account.Infrastructure.Repositories;
@@ -18,7 +19,7 @@ public sealed class UserRepositories : IUserRepositories
         _signInManager = signInManager;
     }
 
-    public async Task<Result> LoginAsync(LoginRequest request)
+    public async Task<Result<ClaimsPrincipal>> LoginAsync(LoginRequest request)
     {
         if (request is null)
             return Result.Fail("Login request is required.");
@@ -30,20 +31,19 @@ public sealed class UserRepositories : IUserRepositories
         if (user is null)
             return Result.Fail("Invalid credentials.");
 
-        var signInResult = await _signInManager.PasswordSignInAsync(
-            user,
-            request.Password,
-            request.IsPersistent,
-            request.LockoutOnFailure);
-
-        return signInResult switch
+        var signInResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: request.LockoutOnFailure);
+        if (!signInResult.Succeeded)
         {
-            { Succeeded: true } => Result.Ok(),
-            { IsLockedOut: true } => Result.Fail("Account is locked. Try again later."),
-            { IsNotAllowed: true } => Result.Fail("Login not allowed. Confirm your email first."),
-            { RequiresTwoFactor: true } => Result.Fail("Two-factor authentication required."),
-            _ => Result.Fail("Invalid credentials.")
-        };
+            return signInResult switch
+            {
+                { IsLockedOut: true } => Result.Fail("Account is locked. Try again later."),
+                { IsNotAllowed: true } => Result.Fail("Login not allowed. Confirm your email first."),
+                { RequiresTwoFactor: true } => Result.Fail("Two-factor authentication required."),
+                _ => Result.Fail("Invalid credentials.")
+            };
+        }
+        var principal = await _signInManager.CreateUserPrincipalAsync(user);
+        return Result.Ok(principal);
     }
 
     public async Task<Result<User>> GetUserAsync(string email)
@@ -69,12 +69,10 @@ public sealed class UserRepositories : IUserRepositories
         if (existing is not null)
             return Result.Fail("User with this email already exists.");
 
-        var user = new User
-        {
-            UserName = request.Name ?? request.Email,
-            Email = request.Email,
-            RegisteredAtUtc = DateTime.UtcNow
-        };
+        if (!(request.Password == request.ConfirmPassword))
+            return Result.Fail("Password confirmation does not match.");
+
+        var user = new User(request.Name, request.Email, request.ImageUrl);
 
         var createResult = await _userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
@@ -169,7 +167,23 @@ public sealed class UserRepositories : IUserRepositories
         return Result.Ok();
     }
 
-    private static bool AreCredentialsValid(string email, string password)
-        => !string.IsNullOrWhiteSpace(email) &&
-           !string.IsNullOrWhiteSpace(password);
+    private static bool AreCredentialsValid(string ctx, string ctx1)
+        => !string.IsNullOrWhiteSpace(ctx) &&
+           !string.IsNullOrWhiteSpace(ctx1);
+
+    public async Task<Result> EmailComnfirmAsync(string userId, string token)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+            return Result.Fail("Invalid user.");
+
+        var tokenBytes = WebEncoders.Base64UrlDecode(token);
+        var tokenDecoded = System.Text.Encoding.UTF8.GetString(tokenBytes);
+
+        var result = await _userManager.ConfirmEmailAsync(user, tokenDecoded);
+
+        return result.Succeeded
+        ? Result.Ok()
+        : Result.Fail(result.Errors.Select(e => e.Description));
+    }
 }

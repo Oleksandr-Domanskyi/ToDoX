@@ -1,10 +1,13 @@
 using System;
 using Account.Core.Entity;
+using Account.Core.Enums;
 using Account.Infrastructure.Database;
 using Account.Infrastructure.Repositories;
+using Account.Infrastructure.Seed;
 using Account.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +25,10 @@ public static class AccountInfrastructureExtensions
 
         services.AddScoped<IUserRepositoryServices, UserRepositoryServices>();
         services.AddScoped<IUserRepositories, UserRepositories>();
+
+        services.AddScoped<RoleSeeder>();
     }
+
 
     private static void ConfigureIdentityAndAuth(IServiceCollection services)
     {
@@ -55,7 +61,7 @@ public static class AccountInfrastructureExtensions
             options.AddPolicy("RequireAdmin", policy =>
             {
                 policy.RequireAuthenticatedUser();
-                policy.RequireRole("Admin");
+                policy.RequireRole(Roles.Admin.ToString());
             });
 
             options.AddPolicy("User", policy =>
@@ -63,7 +69,7 @@ public static class AccountInfrastructureExtensions
                       .RequireAssertion(ctx =>
                           ctx.User.HasClaim(c =>
                               c.Type == "subscription" &&
-                              (c.Value == "Default" || c.Value == "Pro" || c.Value == "Business"))));
+                              (c.Value == Subscriptions.Default.ToString() || c.Value == Subscriptions.Pro.ToString() || c.Value == Subscriptions.Business.ToString()))));
 
             options.AddPolicy("PaidUser", policy =>
                 policy.RequireAuthenticatedUser()

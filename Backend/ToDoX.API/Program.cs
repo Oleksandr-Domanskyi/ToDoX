@@ -8,6 +8,7 @@ using Account.API.Extensions;
 using Account.API.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddAccountModule(builder.Configuration);
 builder.Services.AddPlansModule(builder.Configuration);
@@ -37,6 +38,7 @@ app.UseCors("Frontend");
 app.UsePlansExceptionHandling();
 app.AddPlanModuleEndpoints();
 app.AddAccountEndpoints();
+await app.AddAccountSeeder();
 
 app.UseAuthentication();
 app.UseAuthorization();

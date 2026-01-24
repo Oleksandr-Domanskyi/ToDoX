@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using Account.Core.DTO;
 using Account.Core.DTO.Request;
 using Account.Core.Entity;
@@ -19,8 +20,11 @@ public sealed class UserRepositoryServices : IUserRepositoryServices
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result> LoginAsync(LoginRequest request)
+    public async Task<Result<ClaimsPrincipal>> LoginAsync(LoginRequest request)
         => await _unitOfWork.Repository.LoginAsync(request);
+
+    public async Task<Result> EmailComfirmAsync(string userId, string token)
+        => await _unitOfWork.Repository.EmailComnfirmAsync(userId, token);
 
     public async Task<Result<UserDto>> GetUserAsync(string email)
     {

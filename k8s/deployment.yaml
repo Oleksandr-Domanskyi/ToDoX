@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todox-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todox-api
+  template:
+    metadata:
+      labels:
+        app: todox-api
+    spec:
+      containers:
+        - name: todox-api
+          image: todox-api:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5287
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+            - name: ASPNETCORE_URLS
+              value: "http://+:5287"
+            - name: ConnectionStrings__PosgreSQL
+              value: "Server=postgres;Port=5432;Database=ToDoX;User Id=postgres;Password=27092001Sd;TrustServerCertificate=True"
+            - name: Jwt__Secret
+              valueFrom:
+                secretKeyRef:
+                  name: account-jwt-secret
+                  key: Jwt__Secret

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Account.Application.CQRS.Commands;
 using Account.Application.CQRS.Queries;
 using Account.Core.DTO.Request;
+using Account.Core.Entity;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -24,21 +25,14 @@ public static class AccountEndPoints
 
             if (result.IsFailed)
                 return result.ToHttpResult();
-
             return Results.SignIn(result.Value, authenticationScheme: IdentityConstants.BearerScheme);
         })
         .AllowAnonymous();
 
-        group.MapPost("/refresh", async (RefreshRequest request, ISender sender, CancellationToken ct) =>
+        group.MapPost("/confirm-email", async (string userId, string token, ISender sender) =>
         {
-            var result = await sender.Send(new RefreshTokenCommand(request.RefreshToken), ct);
-
-            if (result.IsFailed)
-                return result.ToHttpResult();
-
-            return Results.SignIn(result.Value, authenticationScheme: IdentityConstants.BearerScheme);
-        })
-        .AllowAnonymous();
+            var result = await sender.Send(new EmailComfirmCommand(userId, token));
+        });
 
         group.MapGet("/by-email", async (string email, ISender sender, CancellationToken ct) =>
         {
@@ -51,8 +45,7 @@ public static class AccountEndPoints
         {
             var result = await sender.Send(new CreateUserCommand(request), ct);
             return result.ToHttpResult();
-        })
-        .RequireAuthorization("RequireAdmin");
+        });
 
         group.MapPut("/{userId}", async (string userId, UpdateUserInformationRequest request, ISender sender, CancellationToken ct) =>
         {

@@ -12,10 +12,12 @@
     <Folder Include="CQRS\Handlers\" />
     <Folder Include="CQRS\Queries\" />
     <Folder Include="Extensions\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Account.Core\Account.Core.csproj" />
+    <ProjectReference Include="..\Account.Infrastructure\Account.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
