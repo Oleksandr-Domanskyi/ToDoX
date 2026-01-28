@@ -1,0 +1,35 @@
+# VCS
+.git
+.gitignore
+k8s/*secret*.yaml
+k8s/todox-api-secrets.yaml
+
+
+# Env/secrets
+.env
+.env.*
+*.pem
+*.pfx
+*.key
+*.crt
+
+# Build artifacts
+**/bin
+**/obj
+
+# Node
+**/node_modules
+**/.next
+
+# IDE
+.vscode
+.idea
+
+# Local certs / dev artifacts (по твоему дереву)
+certificates
+localhost+2.p12
+
+# Misc
+**/*.user
+**/*.suo
+

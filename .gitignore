@@ -94,3 +94,10 @@ test-results/
 # Misc
 *.log
 *.tsbuildinfo
+
+# Kubernetes secrets (never commit)
+k8s/todox-api-secrets.yaml
+k8s/*secret*.yaml
+k8s/*secrets*.yaml
+**/*secret*.yaml
+**/*secrets*.yaml

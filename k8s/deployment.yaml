@@ -23,8 +23,13 @@ spec:
               value: "Development"
             - name: ASPNETCORE_URLS
               value: "http://+:5287"
+t
             - name: ConnectionStrings__PosgreSQL
-              value: "Server=postgres;Port=5432;Database=ToDoX;User Id=postgres;Password=27092001Sd;TrustServerCertificate=True"
+              valueFrom:
+                secretKeyRef:
+                  name: todox-api-secrets
+                  key: ConnectionStrings__PosgreSQL
+
             - name: Jwt__Secret
               valueFrom:
                 secretKeyRef:

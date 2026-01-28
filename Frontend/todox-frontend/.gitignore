@@ -33,6 +33,21 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Kubernetes secrets (never commit)
+k8s/todox-api-secrets.yaml
+k8s/*secret*.yaml
+k8s/*secrets*.yaml
+**/*secret*.yaml
+**/*secrets*.yaml
+
+# Certificates / local keys
+certificates/
+localhost+2.p12
+*.pfx
+*.pem
+*.key
+*.crt
+
 # vercel
 .vercel
 
