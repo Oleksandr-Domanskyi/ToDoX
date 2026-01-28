@@ -20,9 +20,9 @@ public sealed class CreateTaskRequest
 [JsonDerivedType(typeof(CreateCodeBlockRequest), "code")]
 public abstract class CreateTaskBlockRequest
 {
-    public int Order { get; init; }
+    public int Order { get; init; } = 0;
     public string Position { get; init; } = "left";
-    public int Row { get; init; }
+    public int Row { get; init; } = 0;
 }
 
 public sealed class CreateTextBlockRequest : CreateTaskBlockRequest

@@ -70,9 +70,10 @@ export function Sidebar() {
 		const saved = window.localStorage.getItem(STORAGE_KEY);
 		const n = saved ? Number(saved) : DEFAULT_WIDTH;
 
-		const clamped = Number.isFinite(n)
-			? Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, n))
-			: DEFAULT_WIDTH;
+		const clamped =
+			Number.isFinite(n) ?
+				Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, n))
+			:	DEFAULT_WIDTH;
 
 		if (clamped !== sidebarWidth) setSidebarWidth(clamped);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -220,6 +221,19 @@ export function Sidebar() {
 		}
 	};
 
+	// ===== Logout =====
+	const onLogout = async () => {
+		try {
+			await fetch("/api/auth/logout", {
+				method: "POST",
+				credentials: "include",
+			});
+		} finally {
+			router.push("/login");
+			router.refresh();
+		}
+	};
+
 	// ===== Per-plan menu =====
 	const [openMenuPlanId, setOpenMenuPlanId] = useState<string | null>(null);
 	const openMenuRootRef = useRef<HTMLDivElement | null>(null);
@@ -292,29 +306,28 @@ export function Sidebar() {
 
 					{!collapsed && (
 						<div className={styles.emptyText}>
-							{isFilterActive
-								? "Try another query or clear the filter."
-								: "Create your first plan to start organizing tasks."}
+							{isFilterActive ?
+								"Try another query or clear the filter."
+							:	"Create your first plan to start organizing tasks."}
 						</div>
 					)}
 
 					{!collapsed && (
 						<div className={styles.emptyActions}>
-							{isFilterActive ? (
+							{isFilterActive ?
 								<button
 									type="button"
 									className={styles.btn}
 									onClick={clearFilter}>
 									Clear filter
 								</button>
-							) : (
-								<button
+							:	<button
 									type="button"
 									className={styles.btnPrimary}
 									onClick={() => setIsCreatePlanOpen(true)}>
 									Create plan
 								</button>
-							)}
+							}
 						</div>
 					)}
 				</div>
@@ -362,10 +375,9 @@ export function Sidebar() {
 													ev.preventDefault();
 													ev.stopPropagation();
 													setOpenMenuPlanId((prev) =>
-														prev === planId ? null : planId
+														prev === planId ? null : planId,
 													);
 												}}>
-												{/* три точки текстом, без иконок */}
 												<span aria-hidden="true">⋯</span>
 											</button>
 
@@ -401,7 +413,7 @@ export function Sidebar() {
 														type="button"
 														className={cn(
 															styles.planMenuItem,
-															styles.planMenuDanger
+															styles.planMenuDanger,
 														)}
 														role="menuitem"
 														onClick={async (ev) => {
@@ -453,7 +465,6 @@ export function Sidebar() {
 							setCollapsed((p) => !p);
 							setIsFilterOpen(false);
 						}}>
-						{/* стрелка текстом, без иконок */}
 						<span aria-hidden="true">{collapsed ? "›" : "‹"}</span>
 					</button>
 				</div>
@@ -472,7 +483,7 @@ export function Sidebar() {
 						type="button"
 						className={cn(
 							styles.actionBtn,
-							isFilterActive && styles.actionBtnActive
+							isFilterActive && styles.actionBtnActive,
 						)}
 						title={isFilterActive ? `Filter: ${filterQuery}` : "Filter"}
 						aria-label="Filter"
@@ -532,15 +543,36 @@ export function Sidebar() {
 			</nav>
 
 			<footer className={styles.footer}>
-				{!collapsed ? (
-					<div className={styles.footerText}>Select a plan to view tasks</div>
-				) : (
-					<div
-						className={styles.footerMini}
-						title="Select a plan to view tasks">
-						•
+				{!collapsed ?
+					<div className={styles.footerRow}>
+						<div className={styles.footerText}>Select a plan to view tasks</div>
+
+						<button
+							type="button"
+							className={cn(styles.footerBtn, styles.footerBtnDanger)}
+							onClick={onLogout}
+							aria-label="Log out"
+							title="Log out">
+							Log out
+						</button>
 					</div>
-				)}
+				:	<div className={styles.footerCollapsed}>
+						<div
+							className={styles.footerMini}
+							title="Select a plan to view tasks">
+							•
+						</div>
+
+						<button
+							type="button"
+							className={cn(styles.footerIconBtn, styles.footerBtnDanger)}
+							onClick={onLogout}
+							aria-label="Log out"
+							title="Log out">
+							⎋
+						</button>
+					</div>
+				}
 			</footer>
 
 			<div

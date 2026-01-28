@@ -1,22 +1,25 @@
 :root {
 	/* === Backgrounds === */
-	--app-bg: #0b0f14; /* ГЛОБАЛЬНИЙ ФОН (основний) */
-	--panel-bg: #0f1620; /* панелі / секції */
-	--card-bg: #121a25; /* карточки / task */
-	--elevated-bg: #16202c; /* hover / active */
+	--app-bg: #0b0f14;
+	--panel-bg: #0f1620;
+	--card-bg: #121a25;
+	--elevated-bg: #16202c;
 
 	/* === Borders === */
 	--border: rgba(148, 163, 184, 0.14);
 	--border-strong: rgba(148, 163, 184, 0.22);
 
 	/* === Text === */
-	--text: #e5edf6; /* основний текст */
+	--text: #e5edf6;
 	--text-2: rgba(148, 163, 184, 0.85);
 	--text-3: rgba(148, 163, 184, 0.6);
 
-	/* === Accents === */
-	--accent-yellow: #f2c94c; /* якщо хочеш лишити */
-	--accent-blue: #7dd3fc; /* спокійний blue */
+	--accent-main: #2dd4bf;
+	--accent-hover: #22c7b8;
+	--danger: #fb7185;
+
+	--accent-yellow: #f2c94c;
+	--accent-blue: #7dd3fc;
 }
 
 html,
@@ -29,15 +32,17 @@ body {
 	background: var(--app-bg);
 	color: var(--text);
 
-	font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+	font-family:
+		system-ui,
+		-apple-system,
+		Segoe UI,
+		Roboto,
+		Arial,
+		sans-serif;
 	line-height: 1.55;
 	-webkit-font-smoothing: antialiased;
 	text-rendering: optimizeLegibility;
 }
-
-/*
-   App layout
-*/
 
 .app_shell {
 	--sidebar-w: 280px;
@@ -119,4 +124,26 @@ aside {
 .hljs-attribute,
 .hljs-name {
 	color: #7ee787;
+}
+/* --- Fix Chrome/Edge autofill background --- */
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.select:-webkit-autofill,
+.select:-webkit-autofill:hover,
+.select:-webkit-autofill:focus {
+	-webkit-text-fill-color: var(--text) !important;
+	caret-color: var(--text) !important;
+
+	/* перекрашиваем заливку autofill */
+	-webkit-box-shadow: 0 0 0 1000px rgba(9, 13, 22, 0.55) inset !important;
+	box-shadow: 0 0 0 1000px rgba(9, 13, 22, 0.55) inset !important;
+
+	border: 1px solid var(--line) !important;
+	transition: background-color 9999s ease-out 0s;
+}
+
+/* чуть мягче подсветка выбранного текста */
+.input::selection {
+	background: rgba(34, 199, 184, 0.25);
 }

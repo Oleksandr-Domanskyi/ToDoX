@@ -1,9 +1,12 @@
 using System.Security.Claims;
+using System.Text;
 using Account.Core.DTO.Request;
 using Account.Core.Entity;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using ToDoX.Infrastructure.IRepositoryManager;
 
 namespace Account.Infrastructure.Repositories;
@@ -13,8 +16,16 @@ public sealed class UserRepositories : IUserRepositories
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
 
-    public UserRepositories(UserManager<User> userManager, SignInManager<User> signInManager)
+    private readonly IConfiguration _configuration;
+    private readonly IEmailSender _emailSender;
+    public UserRepositories(
+        UserManager<User> userManager,
+        SignInManager<User> signInManager,
+        IConfiguration configuration,
+        IEmailSender emailSender)
     {
+        _emailSender = emailSender;
+        _configuration = configuration;
         _userManager = userManager;
         _signInManager = signInManager;
     }
@@ -69,7 +80,7 @@ public sealed class UserRepositories : IUserRepositories
         if (existing is not null)
             return Result.Fail("User with this email already exists.");
 
-        if (!(request.Password == request.ConfirmPassword))
+        if (request.Password != request.ConfirmPassword)
             return Result.Fail("Password confirmation does not match.");
 
         var user = new User(request.Name, request.Email, request.ImageUrl);
@@ -92,8 +103,26 @@ public sealed class UserRepositories : IUserRepositories
                 return Result.Fail(claimResult.Errors.Select(e => e.Description).ToArray());
         }
 
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var tokenEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        var frontendBaseUrl = _configuration["Frontend:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(frontendBaseUrl))
+            return Result.Fail("Frontend base url is not configured.");
+
+        var confirmUrl = $"{frontendBaseUrl.TrimEnd('/')}/confirm-email?userId={user.Id}&token={tokenEncoded}";
+
+        var html = $@"
+        <p>Hello, {System.Net.WebUtility.HtmlEncode(user.UserName ?? user.Email)}!</p>
+        <p>Please confirm your email by clicking the link below:</p>
+        <p><a href=""{confirmUrl}"">Confirm email</a></p>
+        <p>If you did not create an account, you can ignore this email.</p>";
+
+        await _emailSender.SendEmailAsync(user.Email!, "Confirm your email", html);
+
         return Result.Ok();
     }
+
 
     public async Task<Result> UpdateUserInformationAsync(string userId, UpdateUserInformationRequest request)
     {
@@ -178,12 +207,13 @@ public sealed class UserRepositories : IUserRepositories
             return Result.Fail("Invalid user.");
 
         var tokenBytes = WebEncoders.Base64UrlDecode(token);
-        var tokenDecoded = System.Text.Encoding.UTF8.GetString(tokenBytes);
+        var tokenDecoded = Encoding.UTF8.GetString(tokenBytes);
 
         var result = await _userManager.ConfirmEmailAsync(user, tokenDecoded);
 
         return result.Succeeded
-        ? Result.Ok()
-        : Result.Fail(result.Errors.Select(e => e.Description));
+            ? Result.Ok()
+            : Result.Fail(result.Errors.Select(e => e.Description));
     }
+
 }

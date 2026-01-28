@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ToDoX.Infrastructure.Extensions;
@@ -23,6 +24,8 @@ public static class AccountInfrastructureExtensions
 
         ConfigureIdentityAndAuth(services);
 
+        services.AddHttpClient();
+        services.AddScoped<IEmailSender, MailtrapEmailSender>();
         services.AddScoped<IUserRepositoryServices, UserRepositoryServices>();
         services.AddScoped<IUserRepositories, UserRepositories>();
 

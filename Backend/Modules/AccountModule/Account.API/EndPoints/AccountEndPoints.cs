@@ -5,6 +5,8 @@ using Account.Core.DTO.Request;
 using Account.Core.Entity;
 using FluentResults;
 using MediatR;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -26,13 +28,15 @@ public static class AccountEndPoints
             if (result.IsFailed)
                 return result.ToHttpResult();
             return Results.SignIn(result.Value, authenticationScheme: IdentityConstants.BearerScheme);
+        });
+
+        group.MapPost("/confirm-email", async (ConfirmRequest q, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new EmailComfirmCommand(q.userId!, q.token!), ct);
+            return result.ToHttpResult();
         })
         .AllowAnonymous();
 
-        group.MapPost("/confirm-email", async (string userId, string token, ISender sender) =>
-        {
-            var result = await sender.Send(new EmailComfirmCommand(userId, token));
-        });
 
         group.MapGet("/by-email", async (string email, ISender sender, CancellationToken ct) =>
         {

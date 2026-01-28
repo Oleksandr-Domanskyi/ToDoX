@@ -10,7 +10,6 @@
 	display: flex;
 	flex-direction: column;
 
-	/* строже: меньше градиентов, больше глубины через слои */
 	background: #0b1118;
 	border-right: 1px solid rgba(148, 163, 184, 0.14);
 	overflow: hidden;
@@ -84,7 +83,9 @@
 	display: grid;
 	place-items: center;
 
-	transition: background-color 140ms ease, border-color 140ms ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
 }
 
 .iconBtn:hover {
@@ -127,7 +128,9 @@
 	font-weight: 650;
 	letter-spacing: 0.01em;
 
-	transition: background-color 140ms ease, border-color 140ms ease,
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease,
 		transform 140ms ease;
 }
 
@@ -167,7 +170,9 @@
 
 	outline: none;
 	font-size: 13px;
-	transition: border-color 140ms ease, box-shadow 140ms ease,
+	transition:
+		border-color 140ms ease,
+		box-shadow 140ms ease,
 		background-color 140ms ease;
 }
 
@@ -200,7 +205,9 @@
 	display: grid;
 	place-items: center;
 
-	transition: background-color 140ms ease, border-color 140ms ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
 }
 
 .clearBtn:hover {
@@ -232,7 +239,7 @@
 	margin: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 2px; /* более строгий плотный список */
+	gap: 2px;
 }
 
 .item {
@@ -258,11 +265,12 @@
 	padding: 10px 10px;
 	border-radius: 10px;
 
-	/* вместо плитки — аккуратный “лист” */
 	background: transparent;
 	border: 1px solid transparent;
 
-	transition: background-color 140ms ease, border-color 140ms ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
 }
 
 .link:hover .row {
@@ -318,7 +326,9 @@
 	display: grid;
 	place-items: center;
 
-	transition: background-color 140ms ease, border-color 140ms ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
 }
 
 .planMenuBtn:hover {
@@ -460,7 +470,9 @@
 	font-size: 12px;
 	font-weight: 650;
 
-	transition: background-color 140ms ease, border-color 140ms ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
 }
 
 .btn:hover {
@@ -481,7 +493,9 @@
 	font-size: 12px;
 	font-weight: 700;
 
-	transition: background-color 140ms ease, border-color 140ms ease;
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
 }
 
 .btnPrimary:hover {
@@ -495,6 +509,13 @@
 	border-top: 1px solid rgba(148, 163, 184, 0.14);
 	padding: 10px 12px;
 	background: #0b1118;
+}
+
+.footerRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
 }
 
 .footerText {
@@ -512,6 +533,75 @@
 	border: 1px solid rgba(148, 163, 184, 0.14);
 	background: rgba(18, 26, 37, 0.35);
 	color: rgba(229, 237, 246, 0.75);
+}
+
+.footerBtn {
+	height: 30px;
+	padding: 0 10px;
+	border-radius: 10px;
+
+	border: 1px solid rgba(148, 163, 184, 0.16);
+	background: rgba(18, 26, 37, 0.45);
+	color: rgba(229, 237, 246, 0.9);
+
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 650;
+	letter-spacing: 0.01em;
+
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease,
+		transform 140ms ease;
+}
+
+.footerBtn:hover {
+	background: rgba(148, 163, 184, 0.08);
+	border-color: rgba(148, 163, 184, 0.26);
+	transform: translateY(-1px);
+}
+
+.footerBtn:active {
+	transform: translateY(0px);
+}
+
+.footerIconBtn {
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+
+	border: 1px solid rgba(148, 163, 184, 0.16);
+	background: rgba(18, 26, 37, 0.35);
+	color: rgba(229, 237, 246, 0.85);
+
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+
+	transition:
+		background-color 140ms ease,
+		border-color 140ms ease;
+}
+
+.footerIconBtn:hover {
+	background: rgba(148, 163, 184, 0.08);
+	border-color: rgba(148, 163, 184, 0.26);
+}
+
+.footerIconBtn:focus-visible,
+.footerBtn:focus-visible {
+	outline: 2px solid rgba(148, 163, 184, 0.35);
+	outline-offset: 2px;
+}
+
+.footerBtnDanger {
+	color: rgba(255, 107, 107, 0.95);
+}
+
+.footerCollapsed {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
 }
 
 /* ===== SCROLLBAR ===== */

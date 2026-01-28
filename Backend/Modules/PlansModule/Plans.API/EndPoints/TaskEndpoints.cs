@@ -21,33 +21,38 @@ namespace Plans.API.EndPoints
     {
         public static void MapTaskEndpoints(this IEndpointRouteBuilder endpoint)
         {
-            endpoint.MapGet("plans/{planId}/tasks", async (Guid planId, IMediator mediator, CancellationToken cancellationToken) =>
+            endpoint.MapGet("plans/{planId:guid}/tasks", async (Guid planId, IMediator mediator, CancellationToken cancellationToken) =>
             {
                 var tasks = await mediator.Send(new TaskGetAllQuery(planId), cancellationToken);
                 return Results.Ok(tasks);
-            });
-            endpoint.MapGet("plans/{planId}/tasks/{id}", async (Guid planId, Guid id, IMediator mediator, CancellationToken cancellationToken) =>
+            }).RequireAuthorization();
+
+            endpoint.MapGet("plans/{planId:guid}/tasks/{id:guid}", async (Guid planId, Guid id, IMediator mediator, CancellationToken cancellationToken) =>
             {
                 var task = await mediator.Send(new TaskGetByIdQuery(planId, id), cancellationToken);
                 return task is null ? Results.NotFound("Task not found") : Results.Ok(task);
-            });
-            endpoint.MapPost("plans/{planId}/tasks/Create", async (Guid planId, CreateTaskRequest request, IMediator mediator, CancellationToken cancellationToken) =>
+            })
+             .RequireAuthorization();
+
+            endpoint.MapPost("plans/{planId:guid}/tasks/Create", async (Guid planId, CreateTaskRequest request, IMediator mediator, CancellationToken cancellationToken) =>
             {
                 var result = await mediator.Send(new TaskCreateCommand(request, planId), cancellationToken);
                 if (!result.IsSuccess) return Results.BadRequest(result.Errors);
                 return Results.Ok($"Task was created!!!");
-            });
-            endpoint.MapPut("plans/{planId}/tasks/{taskId}/Update", async (Guid planId, Guid taskId, TaskDto request, IMediator mediator, CancellationToken cancellationToken) =>
+            }).RequireAuthorization();
+
+            endpoint.MapPut("plans/{planId:guid}/tasks/{taskId:guid}/Update", async (Guid planId, Guid taskId, TaskDto request, IMediator mediator, CancellationToken cancellationToken) =>
             {
                 var result = await mediator.Send(new TaskUpdateCommand(request, planId, taskId), cancellationToken);
                 if (!result.IsSuccess) return Results.BadRequest(result.Errors);
                 return Results.Ok($"Task {request.Id} was updated!!!");
-            });
-            endpoint.MapDelete("plans/{planId}/tasks/{taskId}/Delete", async (Guid planId, Guid taskId, IMediator mediator, CancellationToken cancellationToken) =>
+            }).RequireAuthorization();
+
+            endpoint.MapDelete("plans/{planId:guid}/tasks/{taskId:guid}/Delete", async (Guid planId, Guid taskId, IMediator mediator, CancellationToken cancellationToken) =>
             {
                 await mediator.Send(new TaskDeleteCommand(planId, taskId), cancellationToken);
                 return Results.Ok($"Task {taskId} was deleted!!!");
-            });
+            }).RequireAuthorization();
         }
     }
 }

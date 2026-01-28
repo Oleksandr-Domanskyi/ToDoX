@@ -15,7 +15,7 @@ import { TaskBlock } from "@/shared/ui/task-block";
 import type { Task } from "@/features/tasks/model/tasks.types";
 import type { Block, BlockPosition } from "@/shared/types/block";
 
-import styles from "../../../../styles/PlanPage.module.css";
+import styles from "@/styles/PlanPage.module.css";
 
 import { deleteTask } from "@/features/tasks/api/task.api";
 import { deletePlan, editPlan } from "@/features/plans/api/plans.api";
@@ -81,7 +81,9 @@ function getProp(obj: Record<string, unknown>, ...keys: string[]) {
  */
 function sortBlocksByLayout(blocks: Block[]): Block[] {
 	const posRank = (p: BlockPosition) =>
-		p === "left" ? 0 : p === "right" ? 1 : 2;
+		p === "left" ? 0
+		: p === "right" ? 1
+		: 2;
 
 	return blocks
 		.map((b, idx) => {
@@ -90,7 +92,7 @@ function sortBlocksByLayout(blocks: Block[]): Block[] {
 			const Position = toBlockPosition(getProp(base, "Position", "position"));
 			const order = readNumber(
 				getProp(base, "order", "Order"),
-				Number.MAX_SAFE_INTEGER
+				Number.MAX_SAFE_INTEGER,
 			);
 			return { b, idx, Row, Position, order };
 		})
@@ -155,19 +157,31 @@ function saveFlag(key: string, value: boolean) {
 }
 
 export default function PlanPage() {
-	const { planId } = useParams<{ planId: string }>();
+	// ✅ FIX: useParams() може віддати string | string[] | undefined
+	const params = useParams();
+	const planIdRaw = (params as Record<string, unknown>)?.planId;
+
+	const planId =
+		typeof planIdRaw === "string" ? planIdRaw
+		: Array.isArray(planIdRaw) && typeof planIdRaw[0] === "string" ?
+			planIdRaw[0]
+		:	"";
+
+	// ✅ FIX: не даємо "undefined"/"null" летіти в запити (і на бекенд)
+	const isValidPlanId = !!planId && planId !== "undefined" && planId !== "null";
+
 	const router = useRouter();
 	const queryClient = useQueryClient();
 
 	const [isDeletingPlan, setIsDeletingPlan] = useState(false);
 
 	const { data: plan, refetch: refetchPlan } = usePlanById(planId, {
-		enabled: !!planId && !isDeletingPlan,
+		enabled: isValidPlanId && !isDeletingPlan,
 		retry: false,
 	});
 
 	const { data: tasks, refetch: refetchTasks } = useTasksByPlan(planId, {
-		enabled: !!planId && !isDeletingPlan,
+		enabled: isValidPlanId && !isDeletingPlan,
 		retry: false,
 	});
 
@@ -179,11 +193,11 @@ export default function PlanPage() {
 
 	// ===== UI modes =====
 	const [focusMode, setFocusMode] = useState<boolean>(() =>
-		loadFlag(FOCUS_STORAGE_KEY)
+		loadFlag(FOCUS_STORAGE_KEY),
 	);
 
 	const [readingMode, setReadingMode] = useState<boolean>(() =>
-		loadFlag(READING_STORAGE_KEY)
+		loadFlag(READING_STORAGE_KEY),
 	);
 
 	const toggleFocusMode = () => {
@@ -221,7 +235,7 @@ export default function PlanPage() {
 	const totalCount = safeTasks.length;
 	const updatedCount = useMemo(
 		() => safeTasks.filter((t) => Boolean(t.updatedAt)).length,
-		[safeTasks]
+		[safeTasks],
 	);
 
 	const lastUpdatedLabel = useMemo(() => {
@@ -300,7 +314,7 @@ export default function PlanPage() {
 	};
 
 	const onSavePlan = async () => {
-		if (!plan) return;
+		if (!plan || !isValidPlanId) return;
 
 		const nextName = planNameDraft.trim();
 		const nextDesc = planDescDraft.trim();
@@ -328,6 +342,8 @@ export default function PlanPage() {
 
 	const onDeletePlan = async () => {
 		try {
+			if (!isValidPlanId) return;
+
 			setIsDeletingPlan(true);
 
 			setIsPlanMenuOpen(false);
@@ -433,7 +449,7 @@ export default function PlanPage() {
 
 				if (best && best.ratio > 0) setActiveId(best.id);
 			},
-			{ threshold: [0.25, 0.5, 0.7] }
+			{ threshold: [0.25, 0.5, 0.7] },
 		);
 
 		for (const el of elements) io.observe(el);
@@ -443,9 +459,12 @@ export default function PlanPage() {
 	const deleteTaskHandler = async (
 		pId: string,
 		tId: string,
-		onSuccess?: () => void
+		onSuccess?: () => void,
 	) => {
 		try {
+			// ✅ FIX: не робимо запит, якщо planId невалідний
+			if (!pId || pId === "undefined" || pId === "null") return;
+
 			await deleteTask(pId, tId);
 			onSuccess?.();
 		} catch (error) {
@@ -538,18 +557,18 @@ export default function PlanPage() {
 						<div className={styles.headerTop}>
 							<div className={styles.headerTitleArea}>
 								<h1 className={styles.title}>
-									{isEditingPlan
-										? planNameDraft
-										: (plan as Plan | undefined)?.name}
+									{isEditingPlan ?
+										planNameDraft
+									:	(plan as Plan | undefined)?.name}
 								</h1>
 
 								<div className={styles.submeta}>
-									{(plan as Plan | undefined) ? (
+									{(plan as Plan | undefined) ?
 										<>
 											<span className={styles.metaChip}>
 												Created{" "}
 												{new Date(
-													(plan as Plan).createdAt
+													(plan as Plan).createdAt,
 												).toLocaleDateString()}
 											</span>
 											<span className={styles.metaSep}>•</span>
@@ -557,9 +576,7 @@ export default function PlanPage() {
 												Last activity {lastUpdatedLabel}
 											</span>
 										</>
-									) : (
-										<span className={styles.metaChip}>Loading…</span>
-									)}
+									:	<span className={styles.metaChip}>Loading…</span>}
 								</div>
 							</div>
 
@@ -604,7 +621,7 @@ export default function PlanPage() {
 										aria-expanded={isPlanMenuOpen}
 										aria-label="Plan actions"
 										title="Actions"
-										disabled={isDeletingPlan}
+										disabled={isDeletingPlan || !isValidPlanId}
 										onClick={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
@@ -664,13 +681,13 @@ export default function PlanPage() {
 							</div>
 						</div>
 
-						{!isEditingPlan ? (
+						{!isEditingPlan ?
 							<p className={styles.description}>
 								{(plan as Plan | undefined)?.description || ""}
 							</p>
-						) : null}
+						:	null}
 
-						{isEditingPlan ? (
+						{isEditingPlan ?
 							<div className={styles.inlineEditor}>
 								<div className={styles.formRow}>
 									<label className={styles.label}>Name</label>
@@ -717,7 +734,7 @@ export default function PlanPage() {
 									</button>
 								</div>
 							</div>
-						) : null}
+						:	null}
 					</header>
 
 					<section className={styles.section}>
@@ -738,7 +755,7 @@ export default function PlanPage() {
 										type="button"
 										className={styles.btnPrimary}
 										onClick={() => setIsCreateTaskOpen(true)}
-										disabled={isDeletingPlan}
+										disabled={isDeletingPlan || !isValidPlanId}
 										title="Create task">
 										<i className="fa-solid fa-plus" aria-hidden="true" />
 										<span>Create</span>
@@ -806,10 +823,12 @@ export default function PlanPage() {
 										}}
 										disabled={isDeletingPlan || safeTasks.length === 0}
 										title="Collapse/Expand all (C)">
-										{safeTasks.length > 0 &&
-										safeTasks.every((t) => collapsedTaskIds[t.id])
-											? "Expand all"
-											: "Collapse all"}
+										{(
+											safeTasks.length > 0 &&
+											safeTasks.every((t) => collapsedTaskIds[t.id])
+										) ?
+											"Expand all"
+										:	"Collapse all"}
 									</button>
 								</div>
 							</div>
@@ -824,38 +843,37 @@ export default function PlanPage() {
 							</div>
 						</div>
 
-						{filteredTasks.length === 0 ? (
+						{filteredTasks.length === 0 ?
 							<div className={styles.empty}>
 								<div className={styles.emptyTitle}>
 									{query.trim() || onlyUpdated ? "No matches" : "No tasks yet"}
 								</div>
 								<div className={styles.emptyText}>
-									{query.trim() || onlyUpdated
-										? "Try changing filters or search query."
-										: "Create your first task to start building this plan."}
+									{query.trim() || onlyUpdated ?
+										"Try changing filters or search query."
+									:	"Create your first task to start building this plan."}
 								</div>
 
 								<button
 									type="button"
 									className={styles.btnPrimary}
 									onClick={() => setIsCreateTaskOpen(true)}
-									disabled={isDeletingPlan}>
+									disabled={isDeletingPlan || !isValidPlanId}>
 									<i className="fa-solid fa-plus" aria-hidden="true" />
 									<span>Create task</span>
 								</button>
 							</div>
-						) : (
-							<ul className={styles.list}>
+						:	<ul className={styles.list}>
 								{filteredTasks.map((task) => {
-									const blocks = Array.isArray(task.blocks)
-										? (task.blocks as Block[])
-										: [];
+									const blocks =
+										Array.isArray(task.blocks) ? (task.blocks as Block[]) : [];
 									const blocksSorted = sortBlocksByLayout(blocks);
 
 									const maxRow = blocksSorted.reduce((m, b) => {
-										const base = isRecord(b)
-											? (b as unknown as Record<string, unknown>)
-											: {};
+										const base =
+											isRecord(b) ?
+												(b as unknown as Record<string, unknown>)
+											:	{};
 										const r = readNumber(getProp(base, "Row", "row"), 0);
 										return Math.max(m, r);
 									}, 0);
@@ -887,9 +905,9 @@ export default function PlanPage() {
 														disabled={isDeletingPlan}>
 														<i
 															className={`fa-solid ${
-																isCollapsed
-																	? "fa-chevron-right"
-																	: "fa-chevron-down"
+																isCollapsed ? "fa-chevron-right" : (
+																	"fa-chevron-down"
+																)
 															}`}
 															aria-hidden="true"
 														/>
@@ -902,7 +920,7 @@ export default function PlanPage() {
 																Created{" "}
 																{new Date(task.createdAt).toLocaleString()}
 															</span>
-															{task.updatedAt ? (
+															{task.updatedAt ?
 																<>
 																	<span className={styles.cardMetaSep}>•</span>
 																	<span>
@@ -910,7 +928,7 @@ export default function PlanPage() {
 																		{new Date(task.updatedAt).toLocaleString()}
 																	</span>
 																</>
-															) : null}
+															:	null}
 														</div>
 													</div>
 
@@ -937,7 +955,7 @@ export default function PlanPage() {
 
 																setTaskMenuPos({ top, left });
 																setOpenTaskMenuId((prev) =>
-																	prev === task.id ? null : task.id
+																	prev === task.id ? null : task.id,
 																);
 															}}>
 															<i
@@ -946,95 +964,88 @@ export default function PlanPage() {
 															/>
 														</button>
 
-														{openTaskMenuId === task.id && taskMenuPos
-															? createPortal(
-																	<div
-																		ref={taskMenuPortalRef}
-																		className={styles.menuPortal}
-																		role="menu"
-																		style={{
-																			top: taskMenuPos.top,
-																			left: taskMenuPos.left,
-																		}}
-																		/* FIX: гасим pointerdown, чтобы глобальный capture не закрывал меню
-																		   до выполнения handler’ов кнопок */
+														{openTaskMenuId === task.id && taskMenuPos ?
+															createPortal(
+																<div
+																	ref={taskMenuPortalRef}
+																	className={styles.menuPortal}
+																	role="menu"
+																	style={{
+																		top: taskMenuPos.top,
+																		left: taskMenuPos.left,
+																	}}
+																	onPointerDown={(e) => {
+																		e.preventDefault();
+																		e.stopPropagation();
+																	}}
+																	onClick={(e) => {
+																		e.preventDefault();
+																		e.stopPropagation();
+																	}}>
+																	<button
+																		type="button"
+																		className={styles.menuItem}
+																		role="menuitem"
+																		disabled={isDeletingPlan}
 																		onPointerDown={(e) => {
 																			e.preventDefault();
 																			e.stopPropagation();
-																		}}
-																		onClick={(e) => {
+																			closeTaskMenu();
+																			setEditingTaskId((prev) =>
+																				prev === task.id ? null : task.id,
+																			);
+																			setCollapsedTaskIds((prev) => ({
+																				...prev,
+																				[task.id]: false,
+																			}));
+																		}}>
+																		<i
+																			className="fa-regular fa-pen-to-square"
+																			aria-hidden="true"
+																		/>
+																		<span>
+																			{isEditing ? "Close editor" : "Edit task"}
+																		</span>
+																	</button>
+
+																	<button
+																		type="button"
+																		className={`${styles.menuItem} ${styles.menuItemDanger}`}
+																		role="menuitem"
+																		disabled={isDeletingPlan}
+																		onPointerDown={async (e) => {
 																			e.preventDefault();
 																			e.stopPropagation();
+																			closeTaskMenu();
+
+																			await deleteTaskHandler(
+																				planId,
+																				task.id,
+																				async () => {
+																					await queryClient.invalidateQueries({
+																						queryKey: ["tasks", planId],
+																					});
+																					await refetchTasks();
+																				},
+																			);
+
+																			if (editingTaskId === task.id)
+																				setEditingTaskId(null);
 																		}}>
-																		<button
-																			type="button"
-																			className={styles.menuItem}
-																			role="menuitem"
-																			disabled={isDeletingPlan}
-																			/* FIX: делаем действие на pointerdown (надёжнее при capture) */
-																			onPointerDown={(e) => {
-																				e.preventDefault();
-																				e.stopPropagation();
-																				closeTaskMenu();
-																				setEditingTaskId((prev) =>
-																					prev === task.id ? null : task.id
-																				);
-																				setCollapsedTaskIds((prev) => ({
-																					...prev,
-																					[task.id]: false,
-																				}));
-																			}}>
-																			<i
-																				className="fa-regular fa-pen-to-square"
-																				aria-hidden="true"
-																			/>
-																			<span>
-																				{isEditing
-																					? "Close editor"
-																					: "Edit task"}
-																			</span>
-																		</button>
-
-																		<button
-																			type="button"
-																			className={`${styles.menuItem} ${styles.menuItemDanger}`}
-																			role="menuitem"
-																			disabled={isDeletingPlan}
-																			onPointerDown={async (e) => {
-																				e.preventDefault();
-																				e.stopPropagation();
-																				closeTaskMenu();
-
-																				await deleteTaskHandler(
-																					planId,
-																					task.id,
-																					async () => {
-																						await queryClient.invalidateQueries(
-																							{
-																								queryKey: ["tasks", planId],
-																							}
-																						);
-																						await refetchTasks();
-																					}
-																				);
-
-																				if (editingTaskId === task.id)
-																					setEditingTaskId(null);
-																			}}>
-																			<i
-																				className="fa-regular fa-trash-can"
-																				aria-hidden="true"
-																			/>
-																			<span>Delete task</span>
-																		</button>
-																	</div>,
-																	document.body
-															  )
-															: null}
+																		<i
+																			className="fa-regular fa-trash-can"
+																			aria-hidden="true"
+																		/>
+																		<span>Delete task</span>
+																	</button>
+																</div>,
+																document.body,
+															)
+														:	null}
 													</div>
 												</header>
 
-												{isEditing ? (
+												{isEditing ?
 													<div className={styles.editorWrap}>
 														<UpdateTaskModal
 															planId={planId}
@@ -1049,38 +1060,35 @@ export default function PlanPage() {
 															}}
 														/>
 													</div>
-												) : null}
+												:	null}
 
-												{!isEditing &&
-												!isCollapsed &&
-												blocksSorted.length > 0 ? (
+												{!isEditing && !isCollapsed && blocksSorted.length > 0 ?
 													<div
 														className={styles.blocks}
 														style={{
 															gridTemplateRows: `repeat(${maxRow + 1}, auto)`,
 														}}>
 														{blocksSorted.map((block, i) => {
-															const base = isRecord(block)
-																? (block as unknown as Record<string, unknown>)
-																: {};
+															const base =
+																isRecord(block) ?
+																	(block as unknown as Record<string, unknown>)
+																:	{};
 
 															const row = readNumber(
 																getProp(base, "Row", "row"),
-																0
+																0,
 															);
 															const pos = toBlockPosition(
-																getProp(base, "Position", "position")
+																getProp(base, "Position", "position"),
 															);
 															const gridColumn =
-																pos === "full"
-																	? "1 / -1"
-																	: pos === "left"
-																	? "1 / 2"
-																	: "2 / 3";
+																pos === "full" ? "1 / -1"
+																: pos === "left" ? "1 / 2"
+																: "2 / 3";
 															const gridRow = String(row + 1);
 															const ord = readNumber(
 																getProp(base, "order", "Order"),
-																i
+																i,
 															);
 
 															return (
@@ -1093,19 +1101,19 @@ export default function PlanPage() {
 															);
 														})}
 													</div>
-												) : null}
+												:	null}
 
-												{!isEditing && isCollapsed ? (
+												{!isEditing && isCollapsed ?
 													<div className={styles.collapsedHint}>
 														<span>Collapsed</span>
 														<span className={styles.cardMetaSep}>•</span>
 														<span>
-															{blocksSorted.length
-																? `${blocksSorted.length} blocks`
-																: "No blocks"}
+															{blocksSorted.length ?
+																`${blocksSorted.length} blocks`
+															:	"No blocks"}
 														</span>
 													</div>
-												) : null}
+												:	null}
 											</article>
 										</li>
 									);
@@ -1116,13 +1124,13 @@ export default function PlanPage() {
 										type="button"
 										className={styles.bottomCreate}
 										onClick={() => setIsCreateTaskOpen(true)}
-										disabled={isDeletingPlan}>
+										disabled={isDeletingPlan || !isValidPlanId}>
 										<i className="fa-solid fa-plus" aria-hidden="true" />
 										<span>Add another task</span>
 									</button>
 								</li>
 							</ul>
-						)}
+						}
 
 						{isCreateTaskOpen && (
 							<CreateTaskModal

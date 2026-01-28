@@ -1,0 +1,655 @@
+/* ================================
+   PAGE
+================================ */
+.authPage {
+	min-height: 100vh;
+	display: grid;
+	place-items: center;
+	padding: 28px;
+	position: relative;
+	overflow: hidden;
+
+	background:
+		radial-gradient(
+			900px 600px at 20% 20%,
+			rgba(45, 212, 191, 0.035),
+			transparent 62%
+		),
+		radial-gradient(
+			900px 600px at 80% 25%,
+			rgba(96, 165, 250, 0.035),
+			transparent 64%
+		),
+		linear-gradient(180deg, #05070b 0%, #070a10 55%, #05070b 100%);
+}
+
+/* grain */
+.authPage::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0.06;
+	mix-blend-mode: overlay;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+}
+
+/* ================================
+   ONE CARD
+================================ */
+.authCard {
+	width: min(980px, 100%);
+	max-width: 980px;
+
+	/* stable card height for vertical centering */
+	height: min(680px, calc(100vh - 56px));
+
+	display: grid;
+	grid-template-columns: 1.05fr 0.95fr;
+	gap: 0;
+
+	position: relative;
+	z-index: 1;
+
+	border-radius: 22px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: linear-gradient(
+		180deg,
+		rgba(13, 18, 28, 0.86),
+		rgba(8, 12, 20, 0.84)
+	);
+	box-shadow:
+		0 30px 90px rgba(0, 0, 0, 0.75),
+		inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	backdrop-filter: blur(18px);
+	overflow: hidden;
+
+	align-items: stretch;
+}
+
+/* subtle top hairline */
+.authCard::before {
+	content: "";
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	top: 12px;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgba(255, 255, 255, 0.07),
+		transparent
+	);
+	pointer-events: none;
+}
+
+/* center divider */
+.splitDivider {
+	position: absolute;
+	top: 18px;
+	bottom: 18px;
+	left: 50%;
+	width: 1px;
+	background: rgba(255, 255, 255, 0.07);
+	pointer-events: none;
+}
+
+/* hard-disable any old divider element if it remains in JSX */
+.divider {
+	display: none !important;
+}
+
+@media (max-width: 980px) {
+	.authCard {
+		grid-template-columns: 1fr;
+		height: auto;
+	}
+	.splitDivider {
+		display: none;
+	}
+}
+
+/* ================================
+   LEFT PANEL
+================================ */
+.side {
+	padding: 30px 32px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}
+
+.brandRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 18px;
+}
+
+.brandLeft {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.logo {
+	width: 38px;
+	height: 38px;
+	border-radius: 12px;
+	background:
+		radial-gradient(
+			circle at 30% 30%,
+			rgba(45, 212, 191, 0.95),
+			transparent 62%
+		),
+		radial-gradient(
+			circle at 70% 70%,
+			rgba(96, 165, 250, 0.9),
+			transparent 62%
+		),
+		rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+}
+
+.appName {
+	font-weight: 850;
+	letter-spacing: 0.3px;
+	color: rgba(230, 237, 245, 0.95);
+}
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.05);
+	color: rgba(148, 163, 184, 0.86);
+	font-size: 12px;
+}
+
+.badgeDot {
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background: rgba(45, 212, 191, 0.95);
+	box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.1);
+}
+
+.sideTitle {
+	margin: 0;
+	font-size: 24px;
+	letter-spacing: 0.15px;
+	color: rgba(230, 237, 245, 0.98);
+}
+
+.sideLead {
+	margin: 10px 0 0;
+	color: rgba(148, 163, 184, 0.76);
+	font-size: 13.5px;
+	line-height: 1.6;
+	max-width: 58ch;
+}
+
+/* login left list */
+.sideList {
+	margin: 18px 0 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	gap: 14px;
+}
+
+.sideItem {
+	position: relative;
+	padding-left: 14px;
+}
+
+.sideItem::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 2px;
+	bottom: 2px;
+	width: 4px;
+	border-radius: 999px;
+	background: linear-gradient(
+		180deg,
+		rgba(45, 212, 191, 0.9),
+		rgba(96, 165, 250, 0.75)
+	);
+	box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.07);
+}
+
+.sideItemTitle {
+	font-size: 13.5px;
+	font-weight: 850;
+	color: rgba(230, 237, 245, 0.92);
+}
+
+.sideItemText {
+	margin-top: 4px;
+	font-size: 13px;
+	color: rgba(148, 163, 184, 0.75);
+	line-height: 1.5;
+}
+
+/* ================================
+   REGISTER INFO (no duplication)
+================================ */
+.registerInfo {
+	margin-top: 22px;
+	display: grid;
+	gap: 14px;
+	max-width: 56ch;
+}
+
+.infoCard {
+	padding: 14px 14px;
+	border-radius: 18px;
+	background: rgba(255, 255, 255, 0.035);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.infoTitle {
+	font-size: 13px;
+	font-weight: 900;
+	letter-spacing: 0.2px;
+	color: rgba(230, 237, 245, 0.92);
+	margin-bottom: 8px;
+}
+
+.infoList {
+	margin: 0;
+	padding-left: 16px;
+	color: rgba(148, 163, 184, 0.78);
+	font-size: 13px;
+	line-height: 1.55;
+}
+
+.infoList li {
+	margin: 6px 0;
+}
+
+/* left footer buttons for register */
+.sideFooter {
+	margin-top: auto;
+	padding-top: 18px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+	display: flex;
+	justify-content: space-between;
+	gap: 14px;
+	font-size: 13px;
+}
+
+.sideFooter button {
+	background: none;
+	border: none;
+	color: rgba(148, 163, 184, 0.82);
+	cursor: pointer;
+	padding: 0;
+	transition: color 140ms ease;
+}
+
+.sideFooter button:hover {
+	color: rgba(230, 237, 245, 0.95);
+	text-decoration: underline;
+}
+
+/* ================================
+   RIGHT PANEL (CENTER)
+================================ */
+.formPane {
+	padding: 30px 32px; /* як у .side */
+	height: 100%;
+	display: flex;
+	align-items: stretch; /* тягнемо дитину по висоті */
+	justify-content: stretch;
+}
+
+.formBox {
+	width: min(460px, 100%);
+	display: grid;
+	gap: 14px;
+}
+
+/* header */
+.header {
+	display: grid;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.header h1 {
+	margin: 0;
+	font-size: 28px;
+	letter-spacing: 0.15px;
+	color: rgba(230, 237, 245, 0.98);
+}
+
+.header p {
+	margin: 0;
+	font-size: 13.5px;
+	color: rgba(148, 163, 184, 0.76);
+}
+
+/* chips (used on login) */
+.chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 10px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.04);
+	color: rgba(230, 237, 245, 0.78);
+	font-size: 12.5px;
+}
+
+.chipDot {
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background: rgba(45, 212, 191, 0.88);
+	box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.07);
+}
+
+/* form */
+.form {
+	display: grid;
+	gap: 14px;
+	margin-top: 6px;
+}
+
+.fieldTop {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 10px;
+	margin: 0 0 6px 2px;
+}
+
+.label {
+	font-size: 12.5px;
+	color: rgba(148, 163, 184, 0.82);
+}
+
+.linkInline {
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	font-size: 12.5px;
+	color: rgba(148, 163, 184, 0.78);
+}
+
+.linkInline:hover {
+	color: rgba(230, 237, 245, 0.95);
+	text-decoration: underline;
+}
+
+.inputWrap {
+	position: relative;
+}
+
+.inputAction {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	height: 32px;
+	padding: 0 12px;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.05);
+	color: rgba(230, 237, 245, 0.82);
+	cursor: pointer;
+	border: none;
+	transition:
+		transform 140ms ease,
+		background 140ms ease;
+}
+
+.inputAction:hover {
+	background: rgba(255, 255, 255, 0.08);
+	transform: translateY(-50%) translateY(-1px);
+}
+
+.input {
+	width: 100%;
+	height: 50px;
+	padding: 0 14px;
+	border-radius: 16px;
+	background: rgba(7, 10, 16, 0.72);
+	color: rgba(230, 237, 245, 0.94);
+	border: 1px solid rgba(255, 255, 255, 0.07);
+	outline: none;
+
+	transition:
+		border-color 160ms ease,
+		box-shadow 160ms ease,
+		transform 160ms ease;
+}
+
+.input::placeholder {
+	color: rgba(148, 163, 184, 0.4);
+}
+
+.input:hover {
+	border-color: rgba(255, 255, 255, 0.1);
+}
+
+.input:focus {
+	border-color: rgba(45, 212, 191, 0.26);
+	box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.12);
+	transform: translateY(-1px);
+}
+
+/* actions */
+.actions {
+	display: grid;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.primaryBtn {
+	height: 52px;
+	border-radius: 16px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+
+	background: rgba(255, 255, 255, 0.06);
+	color: rgba(230, 237, 245, 0.95);
+
+	font-weight: 900;
+	letter-spacing: 0.2px;
+
+	cursor: pointer;
+
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+	transition:
+		transform 140ms ease,
+		background 140ms ease,
+		border-color 140ms ease;
+}
+
+.primaryBtn:hover {
+	transform: translateY(-1px);
+	background: rgba(255, 255, 255, 0.09);
+	border-color: rgba(255, 255, 255, 0.14);
+}
+
+.primaryBtn:active {
+	transform: translateY(0);
+	background: rgba(255, 255, 255, 0.07);
+}
+
+.primaryBtn:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
+/* footer (login uses this inside formBox) */
+.footer {
+	margin-top: 14px;
+	padding-top: 14px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+	display: flex;
+	justify-content: space-between;
+	gap: 14px;
+	font-size: 13px;
+}
+.footer {
+	margin-top: auto;
+	padding-top: 14px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+	font-size: 13px;
+	color: rgba(148, 163, 184, 0.82);
+}
+.footerLink {
+	background: none;
+	border: none;
+	padding: 0;
+	margin-left: 4px;
+
+	font-size: inherit;
+	font-weight: 600;
+	color: rgba(230, 237, 245, 0.92);
+	cursor: pointer;
+
+	transition: color 140ms ease;
+}
+
+.footerLink:hover {
+	color: rgba(45, 212, 191, 0.95);
+	text-decoration: underline;
+}
+.footer button {
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	color: rgba(148, 163, 184, 0.82);
+	font-size: 13px;
+
+	transition: color 140ms ease;
+}
+
+.footer button:hover {
+	color: rgba(230, 237, 245, 0.95);
+	text-decoration: underline;
+}
+
+.error {
+	border: 1px solid rgba(251, 113, 133, 0.35);
+	background: rgba(251, 113, 133, 0.1);
+	color: rgba(230, 237, 245, 0.95);
+	padding: 10px 12px;
+	border-radius: 14px;
+	font-size: 13px;
+	line-height: 1.35;
+}
+
+/* ================================
+   USAGE PREVIEW (BIG + READABLE)
+================================ */
+.usage {
+	margin-top: 24px; /* нормальный отступ от списка */
+	padding-top: 0;
+}
+
+.usageTop {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 0 2px 10px;
+}
+
+.usageTitle {
+	font-size: 13px;
+	font-weight: 900;
+	letter-spacing: 0.2px;
+	color: rgba(230, 237, 245, 0.92);
+}
+
+.usageHint {
+	font-size: 12px;
+	color: rgba(148, 163, 184, 0.7);
+	white-space: nowrap;
+}
+
+/* bigger container */
+.usageFrame {
+	position: relative;
+	width: 100%;
+	height: 220px; /* ВАЖНО: больше высота */
+	border-radius: 18px;
+
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	overflow: hidden;
+
+	box-shadow:
+		0 28px 80px rgba(0, 0, 0, 0.6),
+		inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.usageImg {
+	width: fit-content !important;
+	max-width: none !important;
+	height: auto;
+	object-fit: none;
+}
+
+/* на hover чуть приятнее, но без blur */
+.usageFrame:hover .usageImg {
+	filter: brightness(1.18) contrast(1.1) saturate(1.05);
+}
+
+.usageFrame:hover {
+	transform: perspective(900px) rotateX(0deg) translateY(-2px);
+	border-color: rgba(255, 255, 255, 0.12);
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.usageGrid {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0.18;
+	background-image:
+		linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+	background-size: 26px 26px;
+	mask-image: radial-gradient(circle at 30% 30%, black 0%, transparent 70%);
+}
+
+.usageGlow {
+	position: absolute;
+	inset: -60px -80px auto -80px;
+	height: 220px;
+	background: radial-gradient(
+		closest-side,
+		rgba(45, 212, 191, 0.14),
+		transparent 72%
+	);
+	pointer-events: none;
+	filter: blur(2px);
+}
+
+@media (max-width: 980px) {
+	.usage {
+		display: none;
+	}
+}

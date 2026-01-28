@@ -21,26 +21,29 @@ public static class PlanEndpoints
         {
             var plans = await mediator.Send(new PlanGetAllQuery(), cancellationToken);
             return Results.Ok(plans);
-        });
-        endpoint.MapGet("/plans/{id}", async (Guid id, IMediator mediator) =>
+        })
+        .RequireAuthorization();
+        endpoint.MapGet("/plans/{id:guid}", async (Guid id, IMediator mediator) =>
         {
             var plan = await mediator.Send(new PlanGetByIdQuery(id));
             if (plan.IsFailed) return Results.NotFound("Plan not found");
             return Results.Ok(plan!.Value);
         });
+
         endpoint.MapPost("/plans/Create", async (CreatePlanRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var result = await mediator.Send(new PlanCreateCommand(request), cancellationToken);
             if (!result.IsSuccess) return Results.BadRequest(result.Errors);
             return Results.Ok($"Plan was created!!!");
-        });
+        })
+        .RequireAuthorization();
         endpoint.MapPut("/plans/Update", async (UpdatePlanRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
             var result = await mediator.Send(new PlanUpdateCommand(request), cancellationToken);
             if (!result.IsSuccess) return Results.BadRequest(result.Errors);
             return Results.Ok($"Plan {request.Id} was updated!!!");
         });
-        endpoint.MapDelete("/plans/Delete/{id}", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
+        endpoint.MapDelete("/plans/Delete/{id:guid}", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
         {
             await mediator.Send(new PlanDeleteCommand(id), cancellationToken);
             return Results.Ok($"Plan {id} was deleted!!!");

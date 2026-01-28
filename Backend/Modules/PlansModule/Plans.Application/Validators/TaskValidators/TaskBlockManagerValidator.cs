@@ -77,19 +77,19 @@ namespace Plans.Application.Validators.TaskValidators
     : AbstractValidator<TBlock>
     where TBlock : CreateTaskBlockRequest
     {
-        protected CreateTaskBlockValidatorBase()
-        {
-            RuleFor(x => x.Order)
-                .GreaterThanOrEqualTo(0);
+        // protected CreateTaskBlockValidatorBase()
+        // {
+        //     RuleFor(x => x.Order)
+        //         .GreaterThanOrEqualTo(0);
 
-            RuleFor(x => x.Position)
-                .NotEmpty()
-                .Must(p => p is "left" or "right" or "center")
-                .WithMessage("Position must be one of: left, right, center.");
+        //     RuleFor(x => x.Position)
+        //         .NotEmpty()
+        //         .Must(p => p is "left" or "right" or "center")
+        //         .WithMessage("Position must be one of: left, right, center.");
 
-            RuleFor(x => x.Row)
-                .GreaterThanOrEqualTo(0);
-        }
+        //     RuleFor(x => x.Row)
+        //         .GreaterThanOrEqualTo(0);
+        // }
     }
 
     internal sealed class CreateTextBlockRequestValidator
