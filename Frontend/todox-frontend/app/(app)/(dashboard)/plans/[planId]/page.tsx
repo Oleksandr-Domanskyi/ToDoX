@@ -634,10 +634,8 @@ export default function PlanPage() {
 										<div
 											className={styles.menu}
 											role="menu"
-											onClick={(e) => {
-												e.preventDefault();
-												e.stopPropagation();
-											}}>
+											onMouseDown={(e) => e.stopPropagation()}
+											onClick={(e) => e.stopPropagation()}>
 											<button
 												type="button"
 												className={styles.menuItem}
@@ -970,17 +968,26 @@ export default function PlanPage() {
 																	ref={taskMenuPortalRef}
 																	className={styles.menuPortal}
 																	role="menu"
+																	tabIndex={-1}
 																	style={{
 																		top: taskMenuPos.top,
 																		left: taskMenuPos.left,
 																	}}
 																	onPointerDown={(e) => {
-																		e.preventDefault();
 																		e.stopPropagation();
 																	}}
 																	onClick={(e) => {
-																		e.preventDefault();
 																		e.stopPropagation();
+																	}}
+																	onKeyDown={(e) => {
+																		if (e.key === "Enter" || e.key === " ") {
+																			e.preventDefault();
+																			e.stopPropagation();
+																		}
+																		if (e.key === "Escape") {
+																			e.stopPropagation();
+																			closeTaskMenu();
+																		}
 																	}}>
 																	<button
 																		type="button"

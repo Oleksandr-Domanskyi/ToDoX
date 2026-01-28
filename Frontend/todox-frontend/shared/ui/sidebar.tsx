@@ -360,8 +360,7 @@ export function Sidebar() {
 										<div
 											className={styles.planMenuRoot}
 											ref={isMenuOpen ? openMenuRootRef : null}
-											onClick={(e) => {
-												e.preventDefault();
+											onPointerDown={(e) => {
 												e.stopPropagation();
 											}}>
 											<button

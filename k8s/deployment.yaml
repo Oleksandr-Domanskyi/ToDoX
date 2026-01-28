@@ -12,26 +12,21 @@ spec:
       labels:
         app: todox-api
     spec:
-      containers:
-        - name: todox-api
-          image: todox-api:local
-          imagePullPolicy: Never
-          ports:
-            - containerPort: 5287
-          env:
-            - name: ASPNETCORE_ENVIRONMENT
-              value: "Development"
-            - name: ASPNETCORE_URLS
-              value: "http://+:5287"
-t
-            - name: ConnectionStrings__PosgreSQL
-              valueFrom:
-                secretKeyRef:
-                  name: todox-api-secrets
-                  key: ConnectionStrings__PosgreSQL
-
-            - name: Jwt__Secret
-              valueFrom:
-                secretKeyRef:
-                  name: account-jwt-secret
-                  key: Jwt__Secret
+  containers:
+    - name: postgres
+      image: postgres:16
+      resources:
+        requests:
+          cpu: "250m"
+          memory: "512Mi"
+        limits:
+          cpu: "500m"
+          memory: "1Gi"
+      ports:
+        - containerPort: 5432
+      envFrom:
+        - secretRef:
+            name: postgres-secret
+      volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
