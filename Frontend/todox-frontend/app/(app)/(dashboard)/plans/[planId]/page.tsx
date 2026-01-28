@@ -634,8 +634,19 @@ export default function PlanPage() {
 										<div
 											className={styles.menu}
 											role="menu"
+											tabIndex={-1}
 											onMouseDown={(e) => e.stopPropagation()}
-											onClick={(e) => e.stopPropagation()}>
+											onClick={(e) => e.stopPropagation()}
+											onKeyDown={(e) => {
+												if (e.key === "Enter" || e.key === " ") {
+													e.preventDefault();
+													e.stopPropagation();
+												}
+												if (e.key === "Escape") {
+													e.stopPropagation();
+													setIsPlanMenuOpen(false);
+												}
+											}}>
 											<button
 												type="button"
 												className={styles.menuItem}
