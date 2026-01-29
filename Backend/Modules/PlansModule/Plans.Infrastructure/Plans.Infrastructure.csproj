@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SharedModules\ToDoX.Infrastructure\ToDoX.Infrastructure.csproj" />
     <ProjectReference Include="..\Plans.Core\Plans.Core.csproj" />
+    <ProjectReference Include="..\Plans.Shared\Plans.Shared.csproj" />
   </ItemGroup>
 
 </Project>

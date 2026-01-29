@@ -11,7 +11,9 @@ namespace Plans.Application.CQRS.Plans.Commands.CreateCommand
     {
         public PlanCreateCommandValidator(IValidator<CreatePlanRequest> validator)
         {
-            RuleFor(x => x.Request).NotNull().SetValidator(validator);
+            RuleFor(x => x.Request)
+                .NotNull()
+                .SetValidator(validator);
         }
     }
 }

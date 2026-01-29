@@ -13,4 +13,7 @@ public interface IUserRepositoryServices
     Task<Result> EmailComfirmAsync(string userId, string token);
     Task<Result> UpdateUserInformationAsync(string userId, UpdateUserInformationRequest request);
     Task<Result> DeleteUserAsync(string email);
+    Task<Result> AttachUserPlanAsync(string userId, Guid planId, CancellationToken ct);
+    Task<Result<List<Guid>>> GetUserProductsIdAsync(string userId, CancellationToken ct);
+    Task<Result<bool>> UserAccessAsync(string userId, Guid planId, CancellationToken ct);
 }

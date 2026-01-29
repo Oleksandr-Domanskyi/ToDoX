@@ -7,6 +7,7 @@ using Account.Infrastructure.Database;
 using Account.Infrastructure.Mappers;
 using Account.Infrastructure.Repositories;
 using FluentResults;
+using ToDoX.Core.Entity.UserPlanAssignment;
 using ToDoX.Infrastructure.UnitOfWork;
 
 namespace Account.Infrastructure.Services;
@@ -42,4 +43,32 @@ public sealed class UserRepositoryServices : IUserRepositoryServices
 
     public async Task<Result> DeleteUserAsync(string email)
         => await _unitOfWork.Repository.DeleteUserAsync(email);
+
+    public async Task<Result> AttachUserPlanAsync(string userId, Guid planId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(userId)) return Result.Fail("UserId is required");
+        if (planId == Guid.Empty) return Result.Fail("PlanId is required");
+
+        var result = await _unitOfWork.Repository.AttachPlanToUserAsync(new UserPlanAssignment(userId, planId), ct);
+
+        if (result.IsFailed) return result;
+
+        await _unitOfWork.SaveChangesAsync();
+        return result;
+    }
+
+    public async Task<Result<List<Guid>>> GetUserProductsIdAsync(string userId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(userId)) return Result.Fail<List<Guid>>("UserId is required");
+
+        return await _unitOfWork.Repository.GetUserProductsIdAsync(userId, ct);
+    }
+
+    public async Task<Result<bool>> UserAccessAsync(string userId, Guid planId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(userId)) return Result.Fail("UserId is required");
+        if (planId == Guid.Empty) return Result.Fail("PlanId is required");
+
+        return await _unitOfWork.Repository.UserAccessAsync(userId, planId);
+    }
 }

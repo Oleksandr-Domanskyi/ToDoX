@@ -27,6 +27,15 @@ const READING_STORAGE_KEY = "plan-reading-mode";
 // ===== Тип Plan =====
 type Id = string;
 
+function blockTypeOf(block: unknown): string {
+	if (!block || typeof block !== "object") return "block";
+	if ("type" in block) {
+		const t = (block as { type?: unknown }).type;
+		return typeof t === "string" && t.trim() ? t : "block";
+	}
+	return "block";
+}
+
 export interface Plan {
 	id: Id;
 	name: string;
@@ -155,9 +164,35 @@ function saveFlag(key: string, value: boolean) {
 		// ignore
 	}
 }
+type AxiosLikeError = {
+	response?: { status?: number };
+};
+
+type StatusError = {
+	status?: number;
+};
+
+function getHttpStatus(err: unknown): number | undefined {
+	if (!err || typeof err !== "object") return undefined;
+
+	// axios-like
+	if ("response" in err) {
+		const e = err as AxiosLikeError;
+		const s = e.response?.status;
+		return typeof s === "number" ? s : undefined;
+	}
+
+	// custom { status }
+	if ("status" in err) {
+		const e = err as StatusError;
+		const s = e.status;
+		return typeof s === "number" ? s : undefined;
+	}
+
+	return undefined;
+}
 
 export default function PlanPage() {
-	// ✅ FIX: useParams() може віддати string | string[] | undefined
 	const params = useParams();
 	const planIdRaw = (params as Record<string, unknown>)?.planId;
 
@@ -167,7 +202,6 @@ export default function PlanPage() {
 			planIdRaw[0]
 		:	"";
 
-	// ✅ FIX: не даємо "undefined"/"null" летіти в запити (і на бекенд)
 	const isValidPlanId = !!planId && planId !== "undefined" && planId !== "null";
 
 	const router = useRouter();
@@ -175,17 +209,76 @@ export default function PlanPage() {
 
 	const [isDeletingPlan, setIsDeletingPlan] = useState(false);
 
-	const { data: plan, refetch: refetchPlan } = usePlanById(planId, {
+	// ✅ ВАЖНО: берем isError/error + статус, чтобы НЕ рендерить старые данные при 404
+	const {
+		data: plan,
+		refetch: refetchPlan,
+		isError: isPlanError,
+		error: planError,
+		isLoading: isPlanLoading,
+		isFetching: isPlanFetching,
+	} = usePlanById(planId, {
 		enabled: isValidPlanId && !isDeletingPlan,
 		retry: false,
 	});
 
-	const { data: tasks, refetch: refetchTasks } = useTasksByPlan(planId, {
+	const {
+		data: tasks,
+		refetch: refetchTasks,
+		isError: isTasksError,
+		error: tasksError,
+		isLoading: isTasksLoading,
+		isFetching: isTasksFetching,
+	} = useTasksByPlan(planId, {
 		enabled: isValidPlanId && !isDeletingPlan,
 		retry: false,
 	});
 
-	const safeTasks = useMemo(() => tasks ?? [], [tasks]);
+	// ✅ НЕ показываем старые данные, если текущий запрос в ошибке (404/403/401)
+	const planStatus = getHttpStatus(planError);
+	const tasksStatus = getHttpStatus(tasksError);
+
+	const isNotFound =
+		(isPlanError && planStatus === 404) ||
+		(isTasksError && tasksStatus === 404);
+	const isForbidden =
+		(isPlanError && planStatus === 403) ||
+		(isTasksError && tasksStatus === 403);
+	const isUnauthorized =
+		(isPlanError && planStatus === 401) ||
+		(isTasksError && tasksStatus === 401);
+
+	const displayPlan =
+		!isValidPlanId || isNotFound || isForbidden || isUnauthorized ?
+			undefined
+		:	plan;
+	const displayTasks =
+		!isValidPlanId || isNotFound || isForbidden || isUnauthorized ?
+			undefined
+		:	tasks;
+
+	const safeTasks = useMemo(() => displayTasks ?? [], [displayTasks]);
+
+	// ✅ При 404/403/401: чистим кэш и уходим назад на список планов
+	useEffect(() => {
+		if (!isValidPlanId) return;
+
+		if (isNotFound || isForbidden || isUnauthorized) {
+			queryClient.removeQueries({ queryKey: ["plan", planId] });
+			queryClient.removeQueries({ queryKey: ["tasks", planId] });
+
+			// Если хочешь: на 401 можно отправлять на /login
+			router.replace("/plans");
+		}
+	}, [
+		isValidPlanId,
+		isNotFound,
+		isForbidden,
+		isUnauthorized,
+		planId,
+		queryClient,
+		router,
+	]);
 
 	// ===== Modals / editors =====
 	const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
@@ -195,7 +288,6 @@ export default function PlanPage() {
 	const [focusMode, setFocusMode] = useState<boolean>(() =>
 		loadFlag(FOCUS_STORAGE_KEY),
 	);
-
 	const [readingMode, setReadingMode] = useState<boolean>(() =>
 		loadFlag(READING_STORAGE_KEY),
 	);
@@ -269,7 +361,6 @@ export default function PlanPage() {
 
 		const byCreatedAsc = (a: Task, b: Task) =>
 			safeTime(a.createdAt) - safeTime(b.createdAt);
-
 		const byCreatedDesc = (a: Task, b: Task) =>
 			safeTime(b.createdAt) - safeTime(a.createdAt);
 
@@ -294,27 +385,27 @@ export default function PlanPage() {
 	const [isPlanSaving, setIsPlanSaving] = useState(false);
 
 	useEffect(() => {
-		if (!plan) return;
-		setPlanNameDraft((plan as Plan).name ?? "");
-		setPlanDescDraft((plan as Plan).description ?? "");
-	}, [plan]);
+		if (!displayPlan) return;
+		setPlanNameDraft((displayPlan as Plan).name ?? "");
+		setPlanDescDraft((displayPlan as Plan).description ?? "");
+	}, [displayPlan]);
 
 	const openPlanEditor = () => {
-		if (!plan) return;
-		setPlanNameDraft((plan as Plan).name ?? "");
-		setPlanDescDraft((plan as Plan).description ?? "");
+		if (!displayPlan) return;
+		setPlanNameDraft((displayPlan as Plan).name ?? "");
+		setPlanDescDraft((displayPlan as Plan).description ?? "");
 		setIsEditingPlan(true);
 	};
 
 	const closePlanEditor = () => {
-		if (!plan) return;
-		setPlanNameDraft((plan as Plan).name ?? "");
-		setPlanDescDraft((plan as Plan).description ?? "");
+		if (!displayPlan) return;
+		setPlanNameDraft((displayPlan as Plan).name ?? "");
+		setPlanDescDraft((displayPlan as Plan).description ?? "");
 		setIsEditingPlan(false);
 	};
 
 	const onSavePlan = async () => {
-		if (!plan || !isValidPlanId) return;
+		if (!displayPlan || !isValidPlanId) return;
 
 		const nextName = planNameDraft.trim();
 		const nextDesc = planDescDraft.trim();
@@ -324,7 +415,7 @@ export default function PlanPage() {
 			setIsPlanSaving(true);
 
 			const payload: Plan = {
-				...(plan as Plan),
+				...(displayPlan as Plan),
 				name: nextName,
 				description: nextDesc,
 			};
@@ -462,7 +553,6 @@ export default function PlanPage() {
 		onSuccess?: () => void,
 	) => {
 		try {
-			// ✅ FIX: не робимо запит, якщо planId невалідний
 			if (!pId || pId === "undefined" || pId === "null") return;
 
 			await deleteTask(pId, tId);
@@ -542,6 +632,11 @@ export default function PlanPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [safeTasks, collapsedTaskIds, readingMode, focusMode]);
 
+	// ✅ Можно показать отдельный UI пока грузится/фетчится
+	const isLoading =
+		(isPlanLoading || isPlanFetching || isTasksLoading || isTasksFetching) &&
+		isValidPlanId;
+
 	return (
 		<div
 			className={[
@@ -559,16 +654,18 @@ export default function PlanPage() {
 								<h1 className={styles.title}>
 									{isEditingPlan ?
 										planNameDraft
-									:	(plan as Plan | undefined)?.name}
+									:	((displayPlan as Plan | undefined)?.name ??
+										(isLoading ? "Loading…" : "—"))
+									}
 								</h1>
 
 								<div className={styles.submeta}>
-									{(plan as Plan | undefined) ?
+									{(displayPlan as Plan | undefined) ?
 										<>
 											<span className={styles.metaChip}>
 												Created{" "}
 												{new Date(
-													(plan as Plan).createdAt,
+													(displayPlan as Plan).createdAt,
 												).toLocaleDateString()}
 											</span>
 											<span className={styles.metaSep}>•</span>
@@ -576,7 +673,10 @@ export default function PlanPage() {
 												Last activity {lastUpdatedLabel}
 											</span>
 										</>
-									:	<span className={styles.metaChip}>Loading…</span>}
+									:	<span className={styles.metaChip}>
+											{isLoading ? "Loading…" : "Not found"}
+										</span>
+									}
 								</div>
 							</div>
 
@@ -590,9 +690,7 @@ export default function PlanPage() {
 									}
 									aria-pressed={readingMode}>
 									<i
-										className={`fa-solid ${
-											readingMode ? "fa-align-left" : "fa-align-justify"
-										}`}
+										className={`fa-solid ${readingMode ? "fa-align-left" : "fa-align-justify"}`}
 										aria-hidden="true"
 									/>
 									<span>{readingMode ? "Reading" : "Default"}</span>
@@ -605,9 +703,7 @@ export default function PlanPage() {
 									title={focusMode ? "Exit focus mode (F)" : "Focus mode (F)"}
 									aria-pressed={focusMode}>
 									<i
-										className={`fa-solid ${
-											focusMode ? "fa-compress" : "fa-expand"
-										}`}
+										className={`fa-solid ${focusMode ? "fa-compress" : "fa-expand"}`}
 										aria-hidden="true"
 									/>
 									<span>{focusMode ? "Focus On" : "Focus Off"}</span>
@@ -621,7 +717,7 @@ export default function PlanPage() {
 										aria-expanded={isPlanMenuOpen}
 										aria-label="Plan actions"
 										title="Actions"
-										disabled={isDeletingPlan || !isValidPlanId}
+										disabled={isDeletingPlan || !isValidPlanId || !displayPlan}
 										onClick={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
@@ -651,7 +747,7 @@ export default function PlanPage() {
 												type="button"
 												className={styles.menuItem}
 												role="menuitem"
-												disabled={isDeletingPlan}
+												disabled={isDeletingPlan || !displayPlan}
 												onClick={(e) => {
 													e.preventDefault();
 													e.stopPropagation();
@@ -669,7 +765,7 @@ export default function PlanPage() {
 												type="button"
 												className={`${styles.menuItem} ${styles.menuItemDanger}`}
 												role="menuitem"
-												disabled={isDeletingPlan}
+												disabled={isDeletingPlan || !displayPlan}
 												onClick={async (e) => {
 													e.preventDefault();
 													e.stopPropagation();
@@ -692,7 +788,7 @@ export default function PlanPage() {
 
 						{!isEditingPlan ?
 							<p className={styles.description}>
-								{(plan as Plan | undefined)?.description || ""}
+								{(displayPlan as Plan | undefined)?.description || ""}
 							</p>
 						:	null}
 
@@ -764,7 +860,7 @@ export default function PlanPage() {
 										type="button"
 										className={styles.btnPrimary}
 										onClick={() => setIsCreateTaskOpen(true)}
-										disabled={isDeletingPlan || !isValidPlanId}
+										disabled={isDeletingPlan || !isValidPlanId || !displayPlan}
 										title="Create task">
 										<i className="fa-solid fa-plus" aria-hidden="true" />
 										<span>Create</span>
@@ -784,7 +880,7 @@ export default function PlanPage() {
 										value={query}
 										onChange={(e) => setQuery(e.target.value)}
 										placeholder='Search tasks… (press "/")'
-										disabled={isDeletingPlan}
+										disabled={isDeletingPlan || !displayPlan}
 									/>
 									{query.trim().length > 0 && (
 										<button
@@ -800,11 +896,9 @@ export default function PlanPage() {
 								<div className={styles.pills}>
 									<button
 										type="button"
-										className={`${styles.pill} ${
-											onlyUpdated ? styles.pillOn : ""
-										}`}
+										className={`${styles.pill} ${onlyUpdated ? styles.pillOn : ""}`}
 										onClick={() => setOnlyUpdated((p) => !p)}
-										disabled={isDeletingPlan}
+										disabled={isDeletingPlan || !displayPlan}
 										title="Only updated">
 										Updated only
 									</button>
@@ -813,7 +907,7 @@ export default function PlanPage() {
 										className={styles.select}
 										value={sortMode}
 										onChange={(e) => setSortMode(e.target.value as SortMode)}
-										disabled={isDeletingPlan}
+										disabled={isDeletingPlan || !displayPlan}
 										aria-label="Sort tasks"
 										title="Sort">
 										<option value="updated">Sort: recent activity</option>
@@ -830,7 +924,9 @@ export default function PlanPage() {
 												safeTasks.every((t) => collapsedTaskIds[t.id]);
 											collapseAll(!allCollapsed);
 										}}
-										disabled={isDeletingPlan || safeTasks.length === 0}
+										disabled={
+											isDeletingPlan || safeTasks.length === 0 || !displayPlan
+										}
 										title="Collapse/Expand all (C)">
 										{(
 											safeTasks.length > 0 &&
@@ -852,7 +948,24 @@ export default function PlanPage() {
 							</div>
 						</div>
 
-						{filteredTasks.length === 0 ?
+						{displayPlan == null ?
+							<div className={styles.empty}>
+								<div className={styles.emptyTitle}>
+									{isLoading ? "Loading…" : "Plan not found"}
+								</div>
+								<div className={styles.emptyText}>
+									{isLoading ?
+										"Loading data…"
+									:	"This plan does not exist or you have no access."}
+								</div>
+								<button
+									type="button"
+									className={styles.btnPrimary}
+									onClick={() => router.replace("/plans")}>
+									Back to plans
+								</button>
+							</div>
+						: filteredTasks.length === 0 ?
 							<div className={styles.empty}>
 								<div className={styles.emptyTitle}>
 									{query.trim() || onlyUpdated ? "No matches" : "No tasks yet"}
@@ -894,9 +1007,7 @@ export default function PlanPage() {
 									return (
 										<li
 											key={task.id}
-											className={`${styles.item} ${
-												isActive ? styles.itemActive : ""
-											}`}
+											className={`${styles.item} ${isActive ? styles.itemActive : ""}`}
 											ref={(node) => {
 												taskRefs.current[task.id] = node;
 											}}
@@ -913,11 +1024,7 @@ export default function PlanPage() {
 														title={isCollapsed ? "Expand" : "Collapse"}
 														disabled={isDeletingPlan}>
 														<i
-															className={`fa-solid ${
-																isCollapsed ? "fa-chevron-right" : (
-																	"fa-chevron-down"
-																)
-															}`}
+															className={`fa-solid ${isCollapsed ? "fa-chevron-right" : "fa-chevron-down"}`}
 															aria-hidden="true"
 														/>
 													</button>
@@ -959,7 +1066,7 @@ export default function PlanPage() {
 																).getBoundingClientRect();
 
 																const top = rect.bottom + 8;
-																const width = 196; // соответствует min-width .menuPortal
+																const width = 196;
 																const left = Math.max(12, rect.right - width);
 
 																setTaskMenuPos({ top, left });
@@ -1111,7 +1218,7 @@ export default function PlanPage() {
 
 															return (
 																<div
-																	key={`${block.type}_${row}_${pos}_${ord}_${i}`}
+																	key={`${blockTypeOf(block)}_${row}_${pos}_${ord}_${i}`}
 																	className={styles.block}
 																	style={{ gridColumn, gridRow }}>
 																	<TaskBlock block={block} />

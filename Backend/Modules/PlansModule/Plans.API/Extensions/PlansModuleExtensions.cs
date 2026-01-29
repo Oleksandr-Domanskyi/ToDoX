@@ -5,6 +5,7 @@ using Plans.Infrastructure.Extentions;
 using Plans.Application.Extensions;
 using Microsoft.AspNetCore.Routing;
 using Plans.API.EndPoints;
+using Plans.Shared.Extensions;
 namespace Plans.API.Extensions;
 
 public static class PlansModuleExtensions
@@ -18,5 +19,6 @@ public static class PlansModuleExtensions
     {
         services.AddPlansApplication();
         services.AddPlanInfrastructure(configuration);
+        services.AddPlanShared();
     }
 }

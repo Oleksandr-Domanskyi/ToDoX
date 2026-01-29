@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using ToDoX.Infrastructure.IRepositoryManager;
 
 namespace ToDoX.Infrastructure.UnitOfWork;
@@ -20,6 +21,7 @@ public class UnitOfWork<TDbContext, TIRepository> : IUnitOfWork<TDbContext, TIRe
 
     public TIRepository Repository => _Repository;
     public async Task<int> SaveChangesAsync() => await _dbContext.SaveChangesAsync();
+    public async Task<IDbContextTransaction> BeginTransactionAsync() => await _dbContext.Database.BeginTransactionAsync();
 
     protected virtual void Dispose(bool disposing)
     {

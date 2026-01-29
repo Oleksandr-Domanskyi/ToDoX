@@ -2,28 +2,34 @@ using System.Security.Claims;
 using System.Text;
 using Account.Core.DTO.Request;
 using Account.Core.Entity;
+using Account.Infrastructure.Database;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ToDoX.Core.Entity.UserPlanAssignment;
 using ToDoX.Infrastructure.IRepositoryManager;
 
 namespace Account.Infrastructure.Repositories;
 
 public sealed class UserRepositories : IUserRepositories
 {
+    private readonly AccountDbContext _dbContext;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
 
     private readonly IConfiguration _configuration;
     private readonly IEmailSender _emailSender;
     public UserRepositories(
+        AccountDbContext dbContext,
         UserManager<User> userManager,
         SignInManager<User> signInManager,
         IConfiguration configuration,
         IEmailSender emailSender)
     {
+        _dbContext = dbContext;
         _emailSender = emailSender;
         _configuration = configuration;
         _userManager = userManager;
@@ -215,5 +221,19 @@ public sealed class UserRepositories : IUserRepositories
             ? Result.Ok()
             : Result.Fail(result.Errors.Select(e => e.Description));
     }
+
+    public async Task<Result> AttachPlanToUserAsync(UserPlanAssignment userPlanAssignment, CancellationToken ct)
+    {
+        await _dbContext.userPlanAssignments.AddAsync(userPlanAssignment, ct);
+        return Result.Ok();
+    }
+
+    public async Task<Result<List<Guid>>> GetUserProductsIdAsync(string userId, CancellationToken ct)
+    {
+        return await _dbContext.userPlanAssignments.Where(x => x.UserId.Equals(userId)).Select(x => x.PlanId).ToListAsync(ct);
+    }
+
+    public async Task<Result<bool>> UserAccessAsync(string userId, Guid planId)
+        => await _dbContext.userPlanAssignments.AnyAsync(x => x.UserId == userId && x.PlanId == planId);
 
 }

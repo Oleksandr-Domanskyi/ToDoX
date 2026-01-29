@@ -20,6 +20,8 @@
     <Folder Include="CQRS\Plans\Queries\GetAllQuery\" />
     <Folder Include="CQRS\Plans\Queries\GetByIdQuery\" />
     <Folder Include="Extensions\" />
+    <Folder Include="Services\" />
+    <Folder Include="Services\IServices\" />
   </ItemGroup>
 
   <ItemGroup>

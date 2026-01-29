@@ -10,6 +10,7 @@ using Plans.Application.CQRS.Plans.Commands.CreateCommand;
 using Plans.Application.CQRS.Plans.Commands.UpdateCommand;
 using Plans.Application.CQRS.Plans.Commands.DeleteCommand;
 using FluentResults;
+using System.Security.Claims;
 
 namespace Plans.API.EndPoints;
 
@@ -28,7 +29,8 @@ public static class PlanEndpoints
             var plan = await mediator.Send(new PlanGetByIdQuery(id));
             if (plan.IsFailed) return Results.NotFound("Plan not found");
             return Results.Ok(plan!.Value);
-        });
+        })
+        .RequireAuthorization();
 
         endpoint.MapPost("/plans/Create", async (CreatePlanRequest request, IMediator mediator, CancellationToken cancellationToken) =>
         {
@@ -42,12 +44,14 @@ public static class PlanEndpoints
             var result = await mediator.Send(new PlanUpdateCommand(request), cancellationToken);
             if (!result.IsSuccess) return Results.BadRequest(result.Errors);
             return Results.Ok($"Plan {request.Id} was updated!!!");
-        });
+        })
+        .RequireAuthorization();
         endpoint.MapDelete("/plans/Delete/{id:guid}", async (Guid id, IMediator mediator, CancellationToken cancellationToken) =>
         {
             await mediator.Send(new PlanDeleteCommand(id), cancellationToken);
             return Results.Ok($"Plan {id} was deleted!!!");
-        });
+        })
+        .RequireAuthorization();
 
     }
 }

@@ -25,6 +25,7 @@
     <ProjectReference Include="..\Plans.Application\Plans.Application.csproj" />
     <ProjectReference Include="..\Plans.Core\Plans.Core.csproj" />
     <ProjectReference Include="..\Plans.Infrastructure\Plans.Infrastructure.csproj" />
+    <ProjectReference Include="..\Plans.Shared\Plans.Shared.csproj" />
   </ItemGroup>
 
 </Project>

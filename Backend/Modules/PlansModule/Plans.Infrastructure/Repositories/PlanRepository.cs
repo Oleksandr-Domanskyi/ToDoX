@@ -27,9 +27,9 @@ public class PlanRepository : IPlanRepository
             _dbContext.Plans.Remove(entity);
     }
 
-    public async Task<IEnumerable<PlanEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<PlanEntity>> GetAllAsync(List<Guid> UserproductsId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Plans.ToListAsync(cancellationToken);
+        return await _dbContext.Plans.Where(p => UserproductsId.Contains(p.Id)).ToListAsync(cancellationToken);
     }
 
     public async Task<PlanEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

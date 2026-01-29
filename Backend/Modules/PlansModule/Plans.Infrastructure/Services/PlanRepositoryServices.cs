@@ -10,24 +10,31 @@ using Plans.Infrastructure.Repositories.IRepositories;
 using Plans.Infrastructure.Services.IServices;
 using ToDoX.Infrastructure.Database;
 using ToDoX.Infrastructure.UnitOfWork;
+using ToDoX.Shared.Core.Contracts;
 
 namespace Plans.Infrastructure.Services;
 
 public class PlanRepositoryServices : IPlanRepositoryServices
 {
     private readonly IUnitOfWork<PlanShemeDbContext, IPlanRepository> _unitOfWork;
+    private readonly IUserPlanAssignments _userPlanAssignments;
 
-    public PlanRepositoryServices(IUnitOfWork<PlanShemeDbContext, IPlanRepository> unitOfWork)
-        => _unitOfWork = unitOfWork;
+    public PlanRepositoryServices(IUnitOfWork<PlanShemeDbContext, IPlanRepository> unitOfWork, IUserPlanAssignments userPlanAssignments)
+    {
+        _userPlanAssignments = userPlanAssignments;
+        _unitOfWork = unitOfWork;
+    }
 
-    public Task<Result<List<PlanDto>>> GetAllPlans(CancellationToken cancellationToken = default)
-        => Result.Try(() => GetAllPlansAsync(cancellationToken));
 
-    public Task<Result<PlanDto>> GetById(Guid id)
-        => GetByIdResultAsync(id);
+    public Task<Result<List<PlanDto>>> GetAllPlans(string userId, CancellationToken cancellationToken = default)
+        => Result.Try(() => GetAllPlansAsync(userId, cancellationToken));
 
-    public Task<Result> CreatePlan(CreatePlanRequest createPlanRequest, CancellationToken cancellationToken = default)
-        => Result.Try(() => CreatePlanAsync(createPlanRequest, cancellationToken));
+    public Task<Result<PlanDto>> GetById(Guid id, string userId)
+        => GetByIdResultAsync(id, userId);
+
+    public Task<Result> CreatePlan(CreatePlanRequest createPlanRequest, string userId, CancellationToken cancellationToken = default)
+        => Result.Try(() => CreatePlanAsync(createPlanRequest, userId, cancellationToken));
+
 
     public Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest, CancellationToken cancellationToken = default)
         => UpdatePlanResultAsync(updatePlanRequest, cancellationToken);
@@ -35,12 +42,21 @@ public class PlanRepositoryServices : IPlanRepositoryServices
     public Task<Result> DeletePlan(Guid id, CancellationToken cancellationToken = default)
         => DeletePlanResultAsync(id, cancellationToken);
 
-
-    private async Task CreatePlanAsync(CreatePlanRequest createplanRequest, CancellationToken cancellationToken = default)
+    private async Task CreatePlanAsync(CreatePlanRequest createplanRequest, string userId, CancellationToken cancellationToken = default)
     {
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
+
         var planEntity = PlatToDtoMapper.CreateMap(createplanRequest);
         await _unitOfWork.Repository.AddAsync(planEntity, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
+
+        var userAttach = await _userPlanAssignments.AttachPlanToUserAsync(userId, planEntity.Id, cancellationToken);
+        if (userAttach.IsFailed)
+        {
+            await transaction.RollbackAsync();
+            throw new Exception("Some problem with user Attach");
+        }
+        await transaction.CommitAsync();
     }
 
     private async Task<Result> UpdatePlanResultAsync(UpdatePlanRequest updatePlanRequest, CancellationToken cancellationToken = default)
@@ -65,18 +81,29 @@ public class PlanRepositoryServices : IPlanRepositoryServices
         return Result.Ok();
     }
 
-    private async Task<Result<PlanDto>> GetByIdResultAsync(Guid id, CancellationToken cancellationToken = default)
+    private async Task<Result<PlanDto>> GetByIdResultAsync(Guid id, string userId, CancellationToken cancellationToken = default)
     {
-        var model = await _unitOfWork.Repository.GetByIdAsync(id, cancellationToken);
+        var access = await _userPlanAssignments.UserAccessAsync(id, userId, cancellationToken);
 
-        if (model is null)
-            return Result.Fail<PlanDto>($"Plan with id {id} not found");
-        return Result.Ok(PlatToDtoMapper.MapToDto(model));
+        if (access.IsFailed)
+            return Result.Fail($"User access failed: {String.Join(Environment.NewLine, access.Errors.Select(e => e.Message))}");
+
+        if (access.Value)
+        {
+            var model = await _unitOfWork.Repository.GetByIdAsync(id, cancellationToken);
+
+            if (model is null)
+                return Result.Fail<PlanDto>($"Plan with id {id} not found");
+            return Result.Ok(PlatToDtoMapper.MapToDto(model));
+        }
+        return Result.Fail("Not Found");
     }
 
-    private async Task<List<PlanDto>> GetAllPlansAsync(CancellationToken cancellationToken = default)
+    private async Task<List<PlanDto>> GetAllPlansAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var model = await _unitOfWork.Repository.GetAllAsync(cancellationToken);
+        var userProducts = await _userPlanAssignments.GetUserAssigment(userId, cancellationToken);
+
+        var model = await _unitOfWork.Repository.GetAllAsync(userProducts.Value, cancellationToken);
         return PlatToDtoMapper.MapToDtoList(model);
     }
 }

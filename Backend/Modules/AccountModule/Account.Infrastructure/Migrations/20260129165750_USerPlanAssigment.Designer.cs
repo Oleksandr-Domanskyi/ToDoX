@@ -3,6 +3,7 @@ using System;
 using Account.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Account.Infrastructure.Migrations
 {
     [DbContext(typeof(AccountDbContext))]
-    partial class AccountDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260129165750_USerPlanAssigment")]
+    partial class USerPlanAssigment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,20 +94,6 @@ namespace Account.Infrastructure.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", "Account");
-                });
-
-            modelBuilder.Entity("Account.Infrastructure.Database.AccountDbContext+PlanRow", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Plans", "Plans", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -254,8 +243,6 @@ namespace Account.Infrastructure.Migrations
 
                     b.HasKey("UserId", "PlanId");
 
-                    b.HasIndex("PlanId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("userPlanAssignments", "Account");
@@ -331,15 +318,6 @@ namespace Account.Infrastructure.Migrations
                     b.HasOne("Account.Core.Entity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ToDoX.Core.Entity.UserPlanAssignment.UserPlanAssignment", b =>
-                {
-                    b.HasOne("Account.Infrastructure.Database.AccountDbContext+PlanRow", null)
-                        .WithMany()
-                        .HasForeignKey("PlanId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

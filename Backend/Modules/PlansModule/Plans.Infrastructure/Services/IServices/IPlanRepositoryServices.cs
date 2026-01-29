@@ -8,9 +8,9 @@ namespace Plans.Infrastructure.Services.IServices;
 
 public interface IPlanRepositoryServices
 {
-    Task<Result<List<PlanDto>>> GetAllPlans(CancellationToken cancellationToken = default);
-    Task<Result<PlanDto>> GetById(Guid id);
-    Task<Result> CreatePlan(CreatePlanRequest createplanRequest, CancellationToken cancellationToken = default);
+    Task<Result<List<PlanDto>>> GetAllPlans(string userId, CancellationToken cancellationToken = default);
+    Task<Result<PlanDto>> GetById(Guid id, string userId);
+    Task<Result> CreatePlan(CreatePlanRequest createplanRequest, string userId, CancellationToken cancellationToken = default);
     Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest, CancellationToken cancellationToken = default);
     Task<Result> DeletePlan(Guid id, CancellationToken cancellationToken = default);
 }

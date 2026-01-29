@@ -4,7 +4,4 @@ using Plans.Core.DTO;
 
 namespace Plans.Application.CQRS.Plans.Queries.GetAllQuery;
 
-public class PlanGetAllQuery : IRequest<List<PlanDto>>
-{
-
-}
+public record PlanGetAllQuery : IRequest<List<PlanDto>>;
