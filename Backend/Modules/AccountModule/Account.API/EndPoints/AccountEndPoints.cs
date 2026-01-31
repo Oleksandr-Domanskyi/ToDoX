@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Account.API.Extensions;
 using Account.Application.CQRS.Commands;
 using Account.Application.CQRS.Queries;
 using Account.Core.DTO.Request;
@@ -37,7 +38,6 @@ public static class AccountEndPoints
         })
         .AllowAnonymous();
 
-
         group.MapGet("/by-email", async (string email, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new GetUserByEmailQuery(email), ct);
@@ -66,55 +66,5 @@ public static class AccountEndPoints
         .RequireAuthorization("RequireAdmin");
 
         return endpoints;
-    }
-
-    private static IResult ToHttpResult(this Result result)
-    {
-        if (result.IsSuccess)
-            return Results.Ok();
-
-        var msg = result.Errors.FirstOrDefault()?.Message ?? "Operation failed.";
-
-        if (msg.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            return Results.NotFound(new { error = msg });
-
-        if (msg.Contains("already exists", StringComparison.OrdinalIgnoreCase))
-            return Results.Conflict(new { error = msg });
-
-        if (msg.Contains("invalid credentials", StringComparison.OrdinalIgnoreCase))
-            return Results.Unauthorized();
-
-        if (msg.Contains("locked", StringComparison.OrdinalIgnoreCase))
-            return Results.Problem(title: "Locked out", detail: msg, statusCode: StatusCodes.Status423Locked);
-
-        if (msg.Contains("two-factor", StringComparison.OrdinalIgnoreCase))
-            return Results.Problem(title: "Two-factor required", detail: msg, statusCode: StatusCodes.Status403Forbidden);
-
-        if (msg.Contains("required", StringComparison.OrdinalIgnoreCase))
-            return Results.BadRequest(new { error = msg });
-
-        return Results.BadRequest(new { error = msg });
-    }
-
-    private static IResult ToHttpResult<T>(this Result<T> result)
-    {
-        if (result.IsSuccess)
-            return Results.Ok(result.Value);
-
-        var msg = result.Errors.FirstOrDefault()?.Message ?? "Operation failed.";
-
-        if (msg.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            return Results.NotFound(new { error = msg });
-
-        if (msg.Contains("already exists", StringComparison.OrdinalIgnoreCase))
-            return Results.Conflict(new { error = msg });
-
-        if (msg.Contains("invalid credentials", StringComparison.OrdinalIgnoreCase))
-            return Results.Unauthorized();
-
-        if (msg.Contains("required", StringComparison.OrdinalIgnoreCase))
-            return Results.BadRequest(new { error = msg });
-
-        return Results.BadRequest(new { error = msg });
     }
 }

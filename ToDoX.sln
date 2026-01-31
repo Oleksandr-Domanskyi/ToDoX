@@ -33,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Account.Infrastructure", "B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Account.Core", "Backend\Modules\AccountModule\Account.Core\Account.Core.csproj", "{5FCD77A7-0CEC-4E7D-9D08-D8C585A25EAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDoX.Shared.Core", "Backend\Modules\SharedModules\ToDoX.Shared.Core\ToDoX.Shared.Core.csproj", "{665BECB0-656F-4375-B358-8A9484B79CA8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDoX.Shared.Web", "Backend\Modules\SharedModules\ToDoX.Shared.Core\ToDoX.Shared.Web.csproj", "{665BECB0-656F-4375-B358-8A9484B79CA8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plans.Shared", "Backend\Modules\PlansModule\Plans.Shared\Plans.Shared.csproj", "{0D05CB5C-E418-489B-BF28-7F8A0F875ED4}"
 EndProject

@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Modules\AccountModule\Account.API\Account.API.csproj" />
     <ProjectReference Include="..\Modules\PlansModule\Plans.API\Plans.API.csproj" />
     <ProjectReference Include="..\Modules\SharedModules\ToDoX.Infrastructure\ToDoX.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\SharedModules\ToDoX.Shared.Core\ToDoX.Shared.Web.csproj" />
   </ItemGroup>
 
 </Project>

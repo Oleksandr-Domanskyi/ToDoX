@@ -91,6 +91,8 @@ coverage/
 .playwright/
 test-results/
 
+Backend/**/Migrations/
+
 # Misc
 *.log
 *.tsbuildinfo

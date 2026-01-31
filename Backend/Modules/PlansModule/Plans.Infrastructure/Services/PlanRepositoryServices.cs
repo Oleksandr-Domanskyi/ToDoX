@@ -36,11 +36,11 @@ public class PlanRepositoryServices : IPlanRepositoryServices
         => Result.Try(() => CreatePlanAsync(createPlanRequest, userId, cancellationToken));
 
 
-    public Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest, CancellationToken cancellationToken = default)
-        => UpdatePlanResultAsync(updatePlanRequest, cancellationToken);
+    public Task<Result> UpdatePlan(UpdatePlanRequest updatePlanRequest, string userId, CancellationToken cancellationToken = default)
+        => UpdatePlanResultAsync(updatePlanRequest, userId, cancellationToken);
 
-    public Task<Result> DeletePlan(Guid id, CancellationToken cancellationToken = default)
-        => DeletePlanResultAsync(id, cancellationToken);
+    public Task<Result> DeletePlan(Guid id, string userId, CancellationToken cancellationToken = default)
+        => DeletePlanResultAsync(id, userId, cancellationToken);
 
     private async Task CreatePlanAsync(CreatePlanRequest createplanRequest, string userId, CancellationToken cancellationToken = default)
     {
@@ -59,32 +59,42 @@ public class PlanRepositoryServices : IPlanRepositoryServices
         await transaction.CommitAsync();
     }
 
-    private async Task<Result> UpdatePlanResultAsync(UpdatePlanRequest updatePlanRequest, CancellationToken cancellationToken = default)
+    private async Task<Result> UpdatePlanResultAsync(UpdatePlanRequest updatePlanRequest, string userId, CancellationToken cancellationToken = default)
     {
-        var existing = await _unitOfWork.Repository.GetByIdAsync(updatePlanRequest.Id, cancellationToken);
-        if (existing is null)
-            return Result.Fail($"Plan with id {updatePlanRequest.Id} not found");
+        var access = await _userPlanAssignments.UserAccessAsync(updatePlanRequest.Id, userId, cancellationToken);
+        if (access.Value)
+        {
+            var existing = await _unitOfWork.Repository.GetByIdAsync(updatePlanRequest.Id, cancellationToken);
+            if (existing is null)
+                return Result.Fail($"Plan with id {updatePlanRequest.Id} not found");
 
-        await _unitOfWork.Repository.UpdateAsync(updatePlanRequest, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
-        return Result.Ok();
+            await _unitOfWork.Repository.UpdateAsync(updatePlanRequest, cancellationToken);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok();
+        }
+        return Result.Fail("Not Found");
+
     }
 
-    private async Task<Result> DeletePlanResultAsync(Guid id, CancellationToken cancellationToken = default)
+    private async Task<Result> DeletePlanResultAsync(Guid id, string userId, CancellationToken cancellationToken = default)
     {
-        var existing = await _unitOfWork.Repository.GetByIdAsync(id, cancellationToken);
-        if (existing is null)
-            return Result.Fail($"Plan with id {id} not found");
+        var access = await _userPlanAssignments.UserAccessAsync(id, userId, cancellationToken);
+        if (access.Value)
+        {
+            var existing = await _unitOfWork.Repository.GetByIdAsync(id, cancellationToken);
+            if (existing is null)
+                return Result.Fail($"Plan with id {id} not found");
 
-        await _unitOfWork.Repository.DeleteAsync(id, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
-        return Result.Ok();
+            await _unitOfWork.Repository.DeleteAsync(id, cancellationToken);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok();
+        }
+        return Result.Fail("Not Found");
     }
 
     private async Task<Result<PlanDto>> GetByIdResultAsync(Guid id, string userId, CancellationToken cancellationToken = default)
     {
         var access = await _userPlanAssignments.UserAccessAsync(id, userId, cancellationToken);
-
         if (access.IsFailed)
             return Result.Fail($"User access failed: {String.Join(Environment.NewLine, access.Errors.Select(e => e.Message))}");
 
