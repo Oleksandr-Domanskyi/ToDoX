@@ -1,10 +1,14 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-function backendBase(): string {
+function backendApiBase(): string {
 	const backendUrl = process.env.BACKEND_URL;
 	if (!backendUrl) throw new Error("BACKEND_URL is not set");
-	return backendUrl.replace(/\/$/, "");
+
+	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
+	const base = backendUrl.replace(/\/+$/, "");
+
+	return `${base}/api/${apiVersion}`;
 }
 
 async function getAccessToken(): Promise<string | null> {
@@ -14,11 +18,15 @@ async function getAccessToken(): Promise<string | null> {
 
 type Ctx = { params: Promise<{ planId: string }> };
 
+function isBadId(id: string | undefined | null): boolean {
+	return !id || id === "undefined" || id === "null";
+}
+
 export async function GET(_req: Request, ctx: Ctx) {
 	try {
 		const { planId } = await ctx.params;
 
-		if (!planId || planId === "undefined" || planId === "null") {
+		if (isBadId(planId)) {
 			return NextResponse.json(
 				{ error: "planId is required" },
 				{ status: 400 },
@@ -30,7 +38,7 @@ export async function GET(_req: Request, ctx: Ctx) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const target = `${backendBase()}/plans/${encodeURIComponent(planId)}/tasks`;
+		const target = `${backendApiBase()}/Plans/plans/${encodeURIComponent(planId)}/tasks`;
 
 		const controller = new AbortController();
 		const t = setTimeout(() => controller.abort(), 30_000);

@@ -13,10 +13,13 @@ async function getAccessToken(): Promise<string | null> {
 	return c.get("access_token")?.value ?? null;
 }
 
-function backendBase(): string {
+function backendApiBase(): string {
 	const backendUrl = process.env.BACKEND_URL;
 	if (!backendUrl) throw new Error("BACKEND_URL is not set");
-	return backendUrl.replace(/\/$/, "");
+
+	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
+	const base = backendUrl.replace(/\/+$/, "");
+	return `${base}/api/${apiVersion}`;
 }
 
 function isBad(v?: string | null) {
@@ -39,9 +42,7 @@ export async function DELETE(_req: Request, ctx: Ctx) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
-	const target = `${backendBase()}/plans/${encodeURIComponent(
-		planId,
-	)}/tasks/${encodeURIComponent(taskId)}/Delete`;
+	const target = `${backendApiBase()}/Plans/plans/${encodeURIComponent(planId)}/tasks/${encodeURIComponent(taskId)}`;
 
 	const r = await fetch(target, {
 		method: "DELETE",

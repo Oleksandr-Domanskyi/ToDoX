@@ -1,10 +1,14 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-function backendBase(): string {
+function backendApiBase(): string {
 	const backendUrl = process.env.BACKEND_URL;
 	if (!backendUrl) throw new Error("BACKEND_URL is not set");
-	return backendUrl.replace(/\/$/, "");
+
+	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
+	const base = backendUrl.replace(/\/+$/, "");
+
+	return `${base}/api/${apiVersion}`;
 }
 
 async function getAccessToken(): Promise<string | null> {
@@ -18,7 +22,7 @@ export async function GET() {
 		if (!token)
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-		const r = await fetch(`${backendBase()}/plans`, {
+		const r = await fetch(`${backendApiBase()}/Plans/plans`, {
 			headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
 			cache: "no-store",
 		});
@@ -47,8 +51,7 @@ export async function POST(req: Request) {
 
 		const body = await req.text();
 
-		// ⚠️ Бекенд створює план через /plans/Create
-		const r = await fetch(`${backendBase()}/plans/Create`, {
+		const r = await fetch(`${backendApiBase()}/Plans/plans`, {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${token}`,

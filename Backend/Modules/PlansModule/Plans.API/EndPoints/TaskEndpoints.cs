@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,44 +11,53 @@ using Plans.Application.CQRS.Tasks.Queries.GetByIdQuery;
 using Plans.Core.DTO;
 using Plans.Core.DTO.Request;
 
-namespace Plans.API.EndPoints
+namespace Plans.API.EndPoints;
+
+public static class TaskEndpoints
 {
-    public static class TaskEndpoints
+    public static IEndpointRouteBuilder AddTaskEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        public static void MapTaskEndpoints(this IEndpointRouteBuilder endpoint)
+        var group = endpoints
+            .MapGroup("/plans/{planId:guid}/tasks")
+            .WithTags("Tasks")
+            .RequireAuthorization();
+
+        group.MapGet("/", async (Guid planId, IMediator mediator, CancellationToken ct) =>
         {
-            endpoint.MapGet("plans/{planId:guid}/tasks", async (Guid planId, IMediator mediator, CancellationToken cancellationToken) =>
-            {
-                var tasks = await mediator.Send(new TaskGetAllQuery(planId), cancellationToken);
-                return Results.Ok(tasks);
-            }).RequireAuthorization();
+            var tasks = await mediator.Send(new TaskGetAllQuery(planId), ct);
+            return Results.Ok(tasks);
+        });
 
-            endpoint.MapGet("plans/{planId:guid}/tasks/{id:guid}", async (Guid planId, Guid id, IMediator mediator, CancellationToken cancellationToken) =>
-            {
-                var task = await mediator.Send(new TaskGetByIdQuery(planId, id), cancellationToken);
-                return task is null ? Results.NotFound("Task not found") : Results.Ok(task);
-            })
-             .RequireAuthorization();
+        group.MapGet("/{id:guid}", async (Guid planId, Guid id, IMediator mediator, CancellationToken ct) =>
+        {
+            var task = await mediator.Send(new TaskGetByIdQuery(planId, id), ct);
+            return task is null
+                ? Results.NotFound("Task not found")
+                : Results.Ok(task);
+        });
 
-            endpoint.MapPost("plans/{planId:guid}/tasks/Create", async (Guid planId, CreateTaskRequest request, IMediator mediator, CancellationToken cancellationToken) =>
-            {
-                var result = await mediator.Send(new TaskCreateCommand(request, planId), cancellationToken);
-                if (!result.IsSuccess) return Results.BadRequest(result.Errors);
-                return Results.Ok($"Task was created!!!");
-            }).RequireAuthorization();
+        group.MapPost("/", async (Guid planId, CreateTaskRequest request, IMediator mediator, CancellationToken ct) =>
+        {
+            var result = await mediator.Send(new TaskCreateCommand(request, planId), ct);
+            return result.IsSuccess
+                ? Results.Ok("Task was created")
+                : Results.BadRequest(result.Errors);
+        });
 
-            endpoint.MapPut("plans/{planId:guid}/tasks/{taskId:guid}/Update", async (Guid planId, Guid taskId, TaskDto request, IMediator mediator, CancellationToken cancellationToken) =>
-            {
-                var result = await mediator.Send(new TaskUpdateCommand(request, planId, taskId), cancellationToken);
-                if (!result.IsSuccess) return Results.BadRequest(result.Errors);
-                return Results.Ok($"Task {request.Id} was updated!!!");
-            }).RequireAuthorization();
+        group.MapPut("/{taskId:guid}", async (Guid planId, Guid taskId, TaskDto request, IMediator mediator, CancellationToken ct) =>
+        {
+            var result = await mediator.Send(new TaskUpdateCommand(request, planId, taskId), ct);
+            return result.IsSuccess
+                ? Results.Ok($"Task {request.Id} was updated")
+                : Results.BadRequest(result.Errors);
+        });
 
-            endpoint.MapDelete("plans/{planId:guid}/tasks/{taskId:guid}/Delete", async (Guid planId, Guid taskId, IMediator mediator, CancellationToken cancellationToken) =>
-            {
-                await mediator.Send(new TaskDeleteCommand(planId, taskId), cancellationToken);
-                return Results.Ok($"Task {taskId} was deleted!!!");
-            }).RequireAuthorization();
-        }
+        group.MapDelete("/{taskId:guid}", async (Guid planId, Guid taskId, IMediator mediator, CancellationToken ct) =>
+        {
+            await mediator.Send(new TaskDeleteCommand(planId, taskId), ct);
+            return Results.Ok($"Task {taskId} was deleted");
+        });
+
+        return endpoints;
     }
 }

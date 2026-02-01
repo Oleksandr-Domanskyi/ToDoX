@@ -24,17 +24,17 @@ public class TaskRepositoryServices(IUnitOfWork<PlanShemeDbContext, ITaskReposit
     {
         var taskEntity = TaskEntityToDtoMapper.Map(createTaskRequest);
         await _unitOfWork.Repository.AddAsync(taskEntity, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
     private async Task UpdateTaskAsync(TaskDto updateTaskRequest, CancellationToken cancellationToken = default)
     {
         await _unitOfWork.Repository.UpdateAsync(updateTaskRequest, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
     private async Task DeleteTaskAsync(Guid planId, Guid id, CancellationToken cancellationToken = default)
     {
         await _unitOfWork.Repository.DeleteAsync(planId, id, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
     private async Task<TaskDto> GetTaskByIdAsync(Guid planId, Guid id, CancellationToken cancellationToken = default)
     {

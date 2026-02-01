@@ -1,10 +1,14 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-function backendBase(): string {
+function backendApiBase(): string {
 	const backendUrl = process.env.BACKEND_URL;
 	if (!backendUrl) throw new Error("BACKEND_URL is not set");
-	return backendUrl.replace(/\/$/, "");
+
+	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
+	const base = backendUrl.replace(/\/+$/, "");
+
+	return `${base}/api/${apiVersion}`;
 }
 
 async function getAccessToken(): Promise<string | null> {
@@ -20,7 +24,7 @@ export async function POST(req: Request) {
 
 		const body = await req.text();
 
-		const r = await fetch(`${backendBase()}/plans/Create`, {
+		const r = await fetch(`${backendApiBase()}Plans/plans`, {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -39,7 +43,7 @@ export async function POST(req: Request) {
 			},
 		});
 	} catch (e) {
-		console.error("POST /api/plans/Create failed:", e);
+		console.error("POST /api/plans failed:", e);
 		return NextResponse.json(
 			{ error: "Proxy failed", details: String(e) },
 			{ status: 500 },

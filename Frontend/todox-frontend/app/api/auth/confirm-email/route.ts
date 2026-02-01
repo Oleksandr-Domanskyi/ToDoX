@@ -16,7 +16,10 @@ export async function POST(req: Request) {
 		);
 	}
 
-	const r = await fetch(`${backendUrl}/account/confirm-email`, {
+	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
+	const base = backendUrl.replace(/\/+$/, "");
+
+	const r = await fetch(`${base}/api/${apiVersion}/account/login`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({

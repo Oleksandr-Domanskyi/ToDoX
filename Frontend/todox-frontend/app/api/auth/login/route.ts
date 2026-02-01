@@ -26,14 +26,17 @@ export async function POST(req: Request) {
 	}
 
 	try {
-		const r = await fetch(`${backendUrl}/account/login`, {
+		const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
+		const base = backendUrl.replace(/\/+$/, "");
+
+		const r = await fetch(`${base}/api/${apiVersion}/account/login`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				Email: body.email,
-				Password: body.password,
-				IsPersistent: body.isPersistent,
-				LockoutOnFailure: body.lockoutOnFailure,
+				email: body.email,
+				password: body.password,
+				isPersistent: body.isPersistent ?? false,
+				lockoutOnFailure: body.lockoutOnFailure ?? false,
 			}),
 		});
 

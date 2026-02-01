@@ -11,6 +11,7 @@ using Plans.Infrastructure.Services.IServices;
 using ToDoX.Infrastructure.Database;
 using ToDoX.Infrastructure.UnitOfWork;
 using ToDoX.Shared.Core.Contracts;
+using System.Transactions;
 
 namespace Plans.Infrastructure.Services;
 
@@ -42,21 +43,28 @@ public class PlanRepositoryServices : IPlanRepositoryServices
     public Task<Result> DeletePlan(Guid id, string userId, CancellationToken cancellationToken = default)
         => DeletePlanResultAsync(id, userId, cancellationToken);
 
-    private async Task CreatePlanAsync(CreatePlanRequest createplanRequest, string userId, CancellationToken cancellationToken = default)
+    private async Task CreatePlanAsync(CreatePlanRequest req, string userId, CancellationToken ct = default)
     {
-        await using var transaction = await _unitOfWork.BeginTransactionAsync();
-
-        var planEntity = PlatToDtoMapper.CreateMap(createplanRequest);
-        await _unitOfWork.Repository.AddAsync(planEntity, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
-
-        var userAttach = await _userPlanAssignments.AttachPlanToUserAsync(userId, planEntity.Id, cancellationToken);
-        if (userAttach.IsFailed)
+        var txOptions = new TransactionOptions
         {
-            await transaction.RollbackAsync();
+            IsolationLevel = IsolationLevel.ReadCommitted,
+            Timeout = TransactionManager.DefaultTimeout
+        };
+
+        using var scope = new TransactionScope(
+            TransactionScopeOption.Required,
+            txOptions,
+            TransactionScopeAsyncFlowOption.Enabled);
+
+        var planEntity = PlatToDtoMapper.CreateMap(req);
+        await _unitOfWork.Repository.AddAsync(planEntity, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        var userAttach = await _userPlanAssignments.AttachPlanToUserAsync(userId, planEntity.Id, ct);
+        if (userAttach.IsFailed)
             throw new Exception("Some problem with user Attach");
-        }
-        await transaction.CommitAsync();
+
+        scope.Complete();
     }
 
     private async Task<Result> UpdatePlanResultAsync(UpdatePlanRequest updatePlanRequest, string userId, CancellationToken cancellationToken = default)
@@ -69,7 +77,7 @@ public class PlanRepositoryServices : IPlanRepositoryServices
                 return Result.Fail($"Plan with id {updatePlanRequest.Id} not found");
 
             await _unitOfWork.Repository.UpdateAsync(updatePlanRequest, cancellationToken);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Ok();
         }
         return Result.Fail("Not Found");
@@ -86,7 +94,7 @@ public class PlanRepositoryServices : IPlanRepositoryServices
                 return Result.Fail($"Plan with id {id} not found");
 
             await _unitOfWork.Repository.DeleteAsync(id, cancellationToken);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Ok();
         }
         return Result.Fail("Not Found");

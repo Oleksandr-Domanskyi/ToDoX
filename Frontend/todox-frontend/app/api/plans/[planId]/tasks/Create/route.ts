@@ -3,10 +3,14 @@ import { NextResponse } from "next/server";
 
 type Ctx = { params: Promise<{ planId: string }> };
 
-function backendBase(): string {
+function backendApiBase(): string {
 	const u = process.env.BACKEND_URL;
 	if (!u) throw new Error("BACKEND_URL is not set");
-	return u.replace(/\/$/, "");
+
+	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
+	const base = u.replace(/\/+$/, "");
+
+	return `${base}/api/${apiVersion}`;
 }
 
 async function token() {
@@ -14,13 +18,16 @@ async function token() {
 	return c.get("access_token")?.value ?? null;
 }
 
+function isBadId(id: string | undefined | null): boolean {
+	return !id || id === "undefined" || id === "null";
+}
+
 export async function POST(req: Request, ctx: Ctx) {
 	const { planId } = await ctx.params;
 
-	console.log("Id:" + planId);
-
-	if (!planId || planId === "undefined" || planId === "null")
+	if (isBadId(planId)) {
 		return NextResponse.json({ error: "planId is required" }, { status: 400 });
+	}
 
 	const t = await token();
 	if (!t) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,7 +35,7 @@ export async function POST(req: Request, ctx: Ctx) {
 	const body = await req.text();
 
 	const r = await fetch(
-		`${backendBase()}/plans/${encodeURIComponent(planId)}/tasks/Create`,
+		`${backendApiBase()}/Plans/plans/${encodeURIComponent(planId)}/tasks`,
 		{
 			method: "POST",
 			headers: {

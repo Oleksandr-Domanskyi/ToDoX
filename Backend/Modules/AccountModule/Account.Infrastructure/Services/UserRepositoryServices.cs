@@ -50,10 +50,8 @@ public sealed class UserRepositoryServices : IUserRepositoryServices
         if (planId == Guid.Empty) return Result.Fail("PlanId is required");
 
         var result = await _unitOfWork.Repository.AttachPlanToUserAsync(new UserPlanAssignment(userId, planId), ct);
-
         if (result.IsFailed) return result;
-
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(ct);
         return result;
     }
 

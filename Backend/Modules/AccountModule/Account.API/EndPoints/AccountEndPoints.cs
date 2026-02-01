@@ -4,6 +4,7 @@ using Account.Application.CQRS.Commands;
 using Account.Application.CQRS.Queries;
 using Account.Core.DTO.Request;
 using Account.Core.Entity;
+using Asp.Versioning;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
@@ -19,8 +20,15 @@ public static class AccountEndPoints
 {
     public static IEndpointRouteBuilder AddAccountEndpoints(this IEndpointRouteBuilder endpoints)
     {
+        var versionSet = endpoints.NewApiVersionSet()
+            .HasApiVersion(new ApiVersion(1, 0))
+            .ReportApiVersions()
+            .Build();
+
         var group = endpoints.MapGroup("/account")
-            .WithTags("Account");
+            .WithTags("Account")
+            .WithApiVersionSet(versionSet)
+            .MapToApiVersion(new ApiVersion(1, 0));
 
         group.MapPost("/login", async (LoginRequest request, ISender sender, CancellationToken ct) =>
         {
