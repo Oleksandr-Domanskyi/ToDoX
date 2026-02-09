@@ -1,5 +1,6 @@
 using System;
 using FluentResults;
+using Microsoft.EntityFrameworkCore;
 using Plans.Core.DTO;
 using Plans.Core.DTO.Request;
 using Plans.Infrastructure.Mappers;

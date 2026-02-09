@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Folder Include="Database\EntityConfiguration\" />
+    <Folder Include="Database\Interсeptor\" />
     <Folder Include="Extentions\" />
     <Folder Include="Mappers\" />
   </ItemGroup>

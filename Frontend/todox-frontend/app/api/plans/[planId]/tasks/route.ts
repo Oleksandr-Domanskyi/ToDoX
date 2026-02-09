@@ -38,7 +38,7 @@ export async function GET(_req: Request, ctx: Ctx) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const target = `${backendApiBase()}/Plans/plans/${encodeURIComponent(planId)}/tasks`;
+		const target = `${backendApiBase()}/Plans/${encodeURIComponent(planId)}/tasks`;
 
 		const controller = new AbortController();
 		const t = setTimeout(() => controller.abort(), 30_000);

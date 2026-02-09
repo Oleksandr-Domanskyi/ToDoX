@@ -13,7 +13,7 @@ import { CreateTaskModal } from "@/features/tasks/ui/CreateTaskModal";
 
 import { TaskBlock } from "@/shared/ui/task-block";
 import type { Task } from "@/features/tasks/model/tasks.types";
-import type { Block, BlockPosition } from "@/shared/types/block";
+import type { Block } from "@/shared/types/block";
 
 import styles from "@/styles/PlanPage.module.css";
 
@@ -59,27 +59,6 @@ function readNumber(v: unknown, fallback: number): number {
 	return fallback;
 }
 
-function toBlockPosition(v: unknown): BlockPosition {
-	if (typeof v === "number" && Number.isFinite(v)) {
-		if (v === 0) return "left";
-		if (v === 1) return "right";
-		if (v === 2) return "full";
-		return "full";
-	}
-	if (typeof v !== "string") return "full";
-	const s = v.trim().toLowerCase();
-
-	if (s === "left" || s === "l" || s === "0") return "left";
-	if (s === "right" || s === "r" || s === "1") return "right";
-	if (s === "full" || s === "f" || s === "2") return "full";
-
-	if (s.includes("left")) return "left";
-	if (s.includes("right")) return "right";
-	if (s.includes("full")) return "full";
-
-	return "full";
-}
-
 function getProp(obj: Record<string, unknown>, ...keys: string[]) {
 	for (const k of keys) if (k in obj) return obj[k];
 	return undefined;
@@ -89,31 +68,17 @@ function getProp(obj: Record<string, unknown>, ...keys: string[]) {
  * Row ASC -> Position(left,right,full) -> order ASC -> idx
  */
 function sortBlocksByLayout(blocks: Block[]): Block[] {
-	const posRank = (p: BlockPosition) =>
-		p === "left" ? 0
-		: p === "right" ? 1
-		: 2;
-
 	return blocks
 		.map((b, idx) => {
 			const base = isRecord(b) ? (b as unknown as Record<string, unknown>) : {};
-			const Row = readNumber(getProp(base, "Row", "row"), 0);
-			const Position = toBlockPosition(getProp(base, "Position", "position"));
 			const order = readNumber(
 				getProp(base, "order", "Order"),
 				Number.MAX_SAFE_INTEGER,
 			);
-			return { b, idx, Row, Position, order };
+			return { b, idx, order };
 		})
 		.sort((a, c) => {
-			if (a.Row !== c.Row) return a.Row - c.Row;
-
-			const prA = posRank(a.Position);
-			const prC = posRank(c.Position);
-			if (prA !== prC) return prA - prC;
-
 			if (a.order !== c.order) return a.order - c.order;
-
 			return a.idx - c.idx;
 		})
 		.map((x) => x.b);
@@ -991,15 +956,6 @@ export default function PlanPage() {
 										Array.isArray(task.blocks) ? (task.blocks as Block[]) : [];
 									const blocksSorted = sortBlocksByLayout(blocks);
 
-									const maxRow = blocksSorted.reduce((m, b) => {
-										const base =
-											isRecord(b) ?
-												(b as unknown as Record<string, unknown>)
-											:	{};
-										const r = readNumber(getProp(base, "Row", "row"), 0);
-										return Math.max(m, r);
-									}, 0);
-
 									const isEditing = editingTaskId === task.id;
 									const isCollapsed = Boolean(collapsedTaskIds[task.id]);
 									const isActive = activeId === task.id;
@@ -1188,29 +1144,17 @@ export default function PlanPage() {
 												:	null}
 
 												{!isEditing && !isCollapsed && blocksSorted.length > 0 ?
-													<div
-														className={styles.blocks}
-														style={{
-															gridTemplateRows: `repeat(${maxRow + 1}, auto)`,
-														}}>
+													<div className={styles.blocks}>
 														{blocksSorted.map((block, i) => {
 															const base =
 																isRecord(block) ?
 																	(block as unknown as Record<string, unknown>)
 																:	{};
+															const id = String(
+																getProp(base, "id", "Id") ?? "",
+															);
 
-															const row = readNumber(
-																getProp(base, "Row", "row"),
-																0,
-															);
-															const pos = toBlockPosition(
-																getProp(base, "Position", "position"),
-															);
-															const gridColumn =
-																pos === "full" ? "1 / -1"
-																: pos === "left" ? "1 / 2"
-																: "2 / 3";
-															const gridRow = String(row + 1);
+															// order only (for debug / future)
 															const ord = readNumber(
 																getProp(base, "order", "Order"),
 																i,
@@ -1218,9 +1162,10 @@ export default function PlanPage() {
 
 															return (
 																<div
-																	key={`${blockTypeOf(block)}_${row}_${pos}_${ord}_${i}`}
-																	className={styles.block}
-																	style={{ gridColumn, gridRow }}>
+																	key={
+																		id || `${blockTypeOf(block)}_${ord}_${i}`
+																	}
+																	className={styles.block}>
 																	<TaskBlock block={block} />
 																</div>
 															);

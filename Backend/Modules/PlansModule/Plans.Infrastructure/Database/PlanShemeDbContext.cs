@@ -13,6 +13,5 @@ public class PlanShemeDbContext : ToDoXDbContext
     public DbSet<TaskEntity> Tasks { get; set; }
     public DbSet<TaskDescriptionBlock> TaskDescriptionBlocks { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder) => base.OnModelCreating(modelBuilder);
 }

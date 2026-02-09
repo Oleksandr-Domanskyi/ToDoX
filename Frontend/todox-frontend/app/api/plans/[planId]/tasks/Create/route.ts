@@ -35,7 +35,7 @@ export async function POST(req: Request, ctx: Ctx) {
 	const body = await req.text();
 
 	const r = await fetch(
-		`${backendApiBase()}/Plans/plans/${encodeURIComponent(planId)}/tasks`,
+		`${backendApiBase()}/Plans/${encodeURIComponent(planId)}/tasks`,
 		{
 			method: "POST",
 			headers: {

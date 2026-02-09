@@ -35,6 +35,9 @@ public class TaskRepository : ITaskRepository
     }
     public async Task UpdateAsync(TaskDto dto, CancellationToken cancellationToken = default)
     {
+
+        _dbcontext.ChangeTracker.Clear();
+
         var task = await _dbcontext.Tasks
             .Include(t => t.Blocks)
             .FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
@@ -46,8 +49,10 @@ public class TaskRepository : ITaskRepository
             task.SetTitle(dto.Title);
 
         task.Touch();
-        TaskBlockUpdater.ApplyBlocks(task, dto.Blocks);
+
+        TaskBlockUpdater.ApplyBlocks(task, dto.Blocks, allowUpsertMissingIds: true);
     }
+
 
     public async Task DeleteAsync(Guid planId, Guid id, CancellationToken cancellationToken = default)
     {

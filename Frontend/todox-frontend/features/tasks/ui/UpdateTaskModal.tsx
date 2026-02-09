@@ -3,8 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./UpdateTaskModal.module.css";
 
-import type { Block } from "@/shared/types/block";
-import type { Task } from "../model/tasks.types";
+import type { Block, BlockPosition } from "@/shared/types/block";
+import type { Task, TaskDto } from "../model/tasks.types";
 import { UpdateTask } from "../api/task.api";
 import { RichTextEditor } from "@/shared/ui/RichTextEditor";
 import { ReadOnlyRichText } from "@/shared/ui/ReadOnlyRichText";
@@ -27,16 +27,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-type TaskDtoPayload = {
-	id: string;
-	planId: string;
-	title: string;
-	isCompleted: boolean;
-	blocks: Block[];
-	createdAt: string;
-	updatedAt?: string | null;
-};
-
 type Props = {
 	planId: string;
 	taskId: string;
@@ -56,6 +46,14 @@ export type RichUi = {
 
 function makeClientId() {
 	return crypto.randomUUID();
+}
+
+function ensureId(id: unknown): string {
+	return typeof id === "string" && id.trim() ? id.trim() : crypto.randomUUID();
+}
+
+function ensurePosition(v: unknown): BlockPosition {
+	return v === "left" || v === "right" || v === "full" ? v : "full";
 }
 
 /* ===== TipTap helpers ===== */
@@ -92,70 +90,120 @@ function readType(v: unknown): Block["type"] {
 		:	"text";
 }
 
+/**
+ * Read block from API/UI shape.
+ * Accepts id/Id, row/Row, position/Position, order/Order, etc.
+ */
 function coerceToBlock(raw: unknown, fallbackOrder: number): Block {
 	const o = isRecord(raw) ? raw : {};
-	const type = readType(o.type);
-	const order = readNumber(o.order, fallbackOrder);
 
-	const Row = readNumber(o.Row, order);
-	const Position =
-		o.Position === "left" || o.Position === "right" || o.Position === "full" ?
-			o.Position
-		:	"full";
+	const type = readType(
+		("type" in o ? o.type : undefined) ?? ("Type" in o ? o.Type : undefined),
+	);
+
+	const order = readNumber(
+		("order" in o ? o.order : undefined) ??
+			("Order" in o ? o.Order : undefined),
+		fallbackOrder,
+	);
+
+	const id = ensureId(
+		("id" in o ? o.id : undefined) ?? ("Id" in o ? o.Id : undefined),
+	);
+
+	const Row = readNumber(
+		("row" in o ? o.row : undefined) ?? ("Row" in o ? o.Row : undefined),
+		order,
+	);
+
+	const Position = ensurePosition(
+		("position" in o ? o.position : undefined) ??
+			("Position" in o ? o.Position : undefined),
+	);
 
 	if (type === "text") {
 		return {
+			id,
 			type,
 			order,
 			Row,
 			Position,
-			richTextJson: readString(o.richTextJson, plainTextToTipTapJson("")),
+			richTextJson: readString(
+				("richTextJson" in o ? o.richTextJson : undefined) ??
+					("RichTextJson" in o ? o.RichTextJson : undefined),
+				plainTextToTipTapJson(""),
+			),
 		};
 	}
 
 	if (type === "image") {
 		return {
+			id,
 			type,
 			order,
 			Row,
 			Position,
-			imageUrl: readString(o.imageUrl, ""),
+			imageUrl: readString(
+				("imageUrl" in o ? o.imageUrl : undefined) ??
+					("ImageUrl" in o ? o.ImageUrl : undefined),
+				"",
+			),
 			captionRichTextJson: readString(
-				o.captionRichTextJson,
+				("captionRichTextJson" in o ? o.captionRichTextJson : undefined) ??
+					("CaptionRichTextJson" in o ? o.CaptionRichTextJson : undefined),
 				plainTextToTipTapJson(""),
 			),
 		};
 	}
 
 	if (type === "checklist") {
-		const itemsRaw = o.items;
+		const itemsRaw =
+			("items" in o ? o.items : undefined) ??
+			("Items" in o ? o.Items : undefined);
+
 		const items =
 			Array.isArray(itemsRaw) ?
 				itemsRaw
 					.map((it) => {
 						if (!isRecord(it)) return null;
+
+						const doneRaw =
+							("done" in it ? it.done : undefined) ??
+							("Done" in it ? it.Done : undefined);
+
 						return {
 							richTextJson: readString(
-								it.richTextJson,
+								("richTextJson" in it ? it.richTextJson : undefined) ??
+									("RichTextJson" in it ? it.RichTextJson : undefined),
 								plainTextToTipTapJson(""),
 							),
-							done: typeof it.done === "boolean" ? it.done : false,
+							done: typeof doneRaw === "boolean" ? doneRaw : false,
 						};
 					})
 					.filter(
 						(x): x is { richTextJson: string; done: boolean } => x !== null,
 					)
 			:	[];
-		return { type, order, Row, Position, items };
+
+		return { id, type, order, Row, Position, items };
 	}
 
 	return {
+		id,
 		type: "code",
 		order,
 		Row,
 		Position,
-		codeContent: readString(o.codeContent, ""),
-		language: readString(o.language, "ts"),
+		codeContent: readString(
+			("codeContent" in o ? o.codeContent : undefined) ??
+				("CodeContent" in o ? o.CodeContent : undefined),
+			"",
+		),
+		language: readString(
+			("language" in o ? o.language : undefined) ??
+				("Language" in o ? o.Language : undefined),
+			"ts",
+		),
 	};
 }
 
@@ -169,15 +217,25 @@ function buildInitialUiBlocks(taskBlocks: unknown): UiBlock[] {
 	return normalizeOrders(ui);
 }
 
+/**
+ * Normalize order + Row + Position, keep id.
+ */
 function normalizeOrders(list: UiBlock[]): UiBlock[] {
 	return list.map((b, idx) => ({
 		...b,
-		data: { ...b.data, order: idx, Row: idx } as Block,
+		data: {
+			...b.data,
+			id: ensureId(b.data.id),
+			order: idx,
+			Row: idx,
+			Position: ensurePosition(b.data.Position),
+		},
 	}));
 }
 
 function makeTextBlock(order: number): Block {
 	return {
+		id: crypto.randomUUID(),
 		type: "text",
 		order,
 		Row: order,
@@ -187,6 +245,7 @@ function makeTextBlock(order: number): Block {
 }
 function makeImageBlock(order: number): Block {
 	return {
+		id: crypto.randomUUID(),
 		type: "image",
 		order,
 		Row: order,
@@ -196,10 +255,18 @@ function makeImageBlock(order: number): Block {
 	};
 }
 function makeChecklistBlock(order: number): Block {
-	return { type: "checklist", order, Row: order, Position: "full", items: [] };
+	return {
+		id: crypto.randomUUID(),
+		type: "checklist",
+		order,
+		Row: order,
+		Position: "full",
+		items: [],
+	};
 }
 function makeCodeBlock(order: number): Block {
 	return {
+		id: crypto.randomUUID(),
 		type: "code",
 		order,
 		Row: order,
@@ -215,6 +282,89 @@ function fingerprint(title: string, done: boolean, blocks: UiBlock[]) {
 		done,
 		blocks: blocks.map((b) => b.data),
 	});
+}
+
+/** =========================
+ *  DTO JSON shape for backend
+ *  (matches [JsonPropertyName] + polymorphic discriminator "type")
+ *  ========================= */
+type ChecklistItemDtoJson = { richTextJson: string; done: boolean };
+
+type BlockDtoJsonBase = {
+	id: string;
+	type: "text" | "image" | "checklist" | "code";
+	order: number;
+	position: string;
+	row: number;
+};
+
+type TextBlockDtoJson = BlockDtoJsonBase & {
+	type: "text";
+	richTextJson: string;
+};
+type ImageBlockDtoJson = BlockDtoJsonBase & {
+	type: "image";
+	imageUrl: string;
+	captionRichTextJson?: string;
+};
+type CheckListBlockDtoJson = BlockDtoJsonBase & {
+	type: "checklist";
+	items: ChecklistItemDtoJson[];
+};
+type CodeBlockDtoJson = BlockDtoJsonBase & {
+	type: "code";
+	codeContent: string;
+	language: string;
+};
+
+type BlockDtoJson =
+	| TextBlockDtoJson
+	| ImageBlockDtoJson
+	| CheckListBlockDtoJson
+	| CodeBlockDtoJson;
+
+/** UI Block -> backend DTO JSON (camelCase + mandatory "type") */
+function toBlockDtoJson(b: Block): BlockDtoJson {
+	const id = ensureId(b.id);
+
+	const base: BlockDtoJsonBase = {
+		id,
+		type: b.type, // discriminator обязателен
+		order: b.order,
+		position: b.Position,
+		row: b.Row,
+	};
+
+	if (b.type === "text") {
+		return { ...base, type: "text", richTextJson: b.richTextJson };
+	}
+
+	if (b.type === "image") {
+		return {
+			...base,
+			type: "image",
+			imageUrl: b.imageUrl,
+			captionRichTextJson: b.captionRichTextJson,
+		};
+	}
+
+	if (b.type === "checklist") {
+		return {
+			...base,
+			type: "checklist",
+			items: b.items.map((x) => ({
+				richTextJson: x.richTextJson,
+				done: x.done,
+			})),
+		};
+	}
+
+	return {
+		...base,
+		type: "code",
+		codeContent: b.codeContent,
+		language: b.language,
+	};
 }
 
 export function UpdateTaskModal({ planId, taskId, task, onSaved }: Props) {
@@ -258,6 +408,7 @@ export function UpdateTaskModal({ planId, taskId, task, onSaved }: Props) {
 			buildInitialUiBlocks(task.blocks),
 		),
 	);
+
 	const dirty = useMemo(
 		() => initialRef.current !== fingerprint(title, isCompleted, blocks),
 		[title, isCompleted, blocks],
@@ -303,27 +454,33 @@ export function UpdateTaskModal({ planId, taskId, task, onSaved }: Props) {
 
 	const submit = async () => {
 		setError(null);
+
 		if (!title.trim()) {
 			setError("Title is required");
 			return;
 		}
 
-		const normalized = normalizeOrders(blocks).map((b) => b.data);
+		const normalizedUi = normalizeOrders(blocks);
+		const dtoBlocksJson = normalizedUi.map((x) => toBlockDtoJson(x.data));
 
-		const payload: TaskDtoPayload = {
+		// ВАЖНО:
+		// TaskDto в TS может быть описан иначе (blocks: Block[]),
+		// но для сервера нужен JSON-вид под [JsonPropertyName] и discriminator "type".
+		// Поэтому передаём как TaskDto через unknown без any.
+		const payload = {
 			id: taskId,
 			planId,
 			title: title.trim(),
 			isCompleted,
-			blocks: normalized,
+			blocks: dtoBlocksJson,
 			createdAt: task.createdAt,
 			updatedAt: task.updatedAt ?? null,
-		};
+		} as unknown as TaskDto;
 
 		setIsSubmitting(true);
 		try {
 			await UpdateTask(planId, taskId, payload);
-			initialRef.current = fingerprint(title, isCompleted, blocks);
+			initialRef.current = fingerprint(title, isCompleted, normalizedUi);
 			onSaved?.();
 		} catch (err) {
 			console.error(err);
@@ -459,6 +616,7 @@ function SortableBlockItem({
 		listeners,
 		isDragging,
 	} = useSortable({ id });
+
 	const [isEditing, setIsEditing] = useState(false);
 
 	useEffect(() => {

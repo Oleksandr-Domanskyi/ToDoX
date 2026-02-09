@@ -9,4 +9,13 @@ public sealed class TextBlock : TaskDescriptionBlock
     {
         RichTextJson = textJson;
     }
+    public TextBlock(Guid id, Guid taskEntityId, string textJson, int order, string position, int row) : base(taskEntityId, order, position, row)
+    {
+        SetId(id);
+        SetRichText(textJson);
+    }
+    public void SetRichText(string richTextJson)
+    {
+        RichTextJson = richTextJson ?? "{}";
+    }
 }

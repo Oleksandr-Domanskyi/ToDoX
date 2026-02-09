@@ -11,6 +11,9 @@ namespace Plans.Core.DTO;
 [JsonDerivedType(typeof(CodeBlockDto), "code")]
 public abstract class TaskDescriptionBlockDto
 {
+    [JsonPropertyName("id")]
+    public Guid Id { get; init; }
+
     [JsonPropertyName("order")]
     public int Order { get; init; }
 

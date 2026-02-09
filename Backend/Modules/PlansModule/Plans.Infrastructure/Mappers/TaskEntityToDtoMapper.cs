@@ -61,46 +61,51 @@ public static class TaskEntityToDtoMapper
     }
 
     private static TaskDescriptionBlockDto MapDescriptionBlock(TaskDescriptionBlock block) =>
-    block switch
+block switch
+{
+    TextBlock t => new TextBlockDto
     {
-        TextBlock t => new TextBlockDto
-        {
-            Order = t.Order,
-            Position = t.Position,
-            Row = t.Row,
-            RichTextJson = t.RichTextJson
-        },
+        Id = t.Id,
+        Order = t.Order,
+        Position = t.Position,
+        Row = t.Row,
+        RichTextJson = t.RichTextJson
+    },
 
-        CheckListBlock c => new CheckListBlockDto
+    CheckListBlock c => new CheckListBlockDto
+    {
+        Id = c.Id,
+        Order = c.Order,
+        Position = c.Position,
+        Row = c.Row,
+        Items = c.Items.Select(i => new ChecklistItemDto
         {
-            Order = c.Order,
-            Position = c.Position,
-            Row = c.Row,
-            Items = c.Items.Select(i => new ChecklistItemDto
-            {
-                RichTextJson = i.RichTextJson,
-                Done = i.Done
-            }).ToList()
-        },
+            RichTextJson = i.RichTextJson,
+            Done = i.Done
+        }).ToList()
+    },
 
-        CodeBlock cb => new CodeBlockDto
-        {
-            Order = cb.Order,
-            Position = cb.Position,
-            Row = cb.Row,
-            CodeContent = cb.CodeContent,
-            Language = cb.Language
-        },
+    CodeBlock cb => new CodeBlockDto
+    {
+        Id = cb.Id,
+        Order = cb.Order,
+        Position = cb.Position,
+        Row = cb.Row,
+        CodeContent = cb.CodeContent,
+        Language = cb.Language
+    },
 
-        ImageBlock i => new ImageBlockDto
-        {
-            Order = i.Order,
-            Position = i.Position,
-            Row = i.Row,
-            ImageUrl = i.ImageUrl
-        },
+    ImageBlock i => new ImageBlockDto
+    {
+        Id = i.Id,
+        Order = i.Order,
+        Position = i.Position,
+        Row = i.Row,
+        ImageUrl = i.ImageUrl,
+        CaptionRichTextJson = i.CaptionRichTextJson ?? ""
+    },
 
-        _ => throw new ArgumentException($"Unknown block type: {block.GetType().Name}")
-    };
+    _ => throw new ArgumentException($"Unknown block type: {block.GetType().Name}")
+};
 
 }

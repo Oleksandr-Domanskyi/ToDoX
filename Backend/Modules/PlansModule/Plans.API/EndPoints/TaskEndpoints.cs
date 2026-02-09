@@ -10,6 +10,8 @@ using Plans.Application.CQRS.Tasks.Queries.GetAllQuery;
 using Plans.Application.CQRS.Tasks.Queries.GetByIdQuery;
 using Plans.Core.DTO;
 using Plans.Core.DTO.Request;
+using System.Text.Json;
+using Plans.API.Json;
 
 namespace Plans.API.EndPoints;
 
@@ -18,7 +20,7 @@ public static class TaskEndpoints
     public static IEndpointRouteBuilder AddTaskEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints
-            .MapGroup("/plans/{planId:guid}/tasks")
+            .MapGroup("/{planId:guid}/tasks")
             .WithTags("Tasks")
             .RequireAuthorization();
 
@@ -44,13 +46,22 @@ public static class TaskEndpoints
                 : Results.BadRequest(result.Errors);
         });
 
-        group.MapPut("/{taskId:guid}", async (Guid planId, Guid taskId, TaskDto request, IMediator mediator, CancellationToken ct) =>
+        group.MapPut("/{taskId:guid}", async (Guid planId, Guid taskId, HttpRequest req, IMediator mediator, CancellationToken ct) =>
         {
+            TaskDto? request;
+            request = await JsonSerializer.DeserializeAsync<TaskDto>(req.Body, PlansJson.Options, ct);
+            if (request is null)
+                return Results.BadRequest(new { error = "Body is required" });
+
             var result = await mediator.Send(new TaskUpdateCommand(request, planId, taskId), ct);
+
             return result.IsSuccess
                 ? Results.Ok($"Task {request.Id} was updated")
                 : Results.BadRequest(result.Errors);
         });
+
+
+
 
         group.MapDelete("/{taskId:guid}", async (Guid planId, Guid taskId, IMediator mediator, CancellationToken ct) =>
         {

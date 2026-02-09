@@ -1,4 +1,5 @@
 using System;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Plans.Infrastructure.Repositories;
@@ -17,7 +18,12 @@ public static class AddPlanInfrastructureExtensions
         => services.AddScoped(typeof(IUnitOfWork<,>), typeof(UnitOfWork<,>));
     public static void AddPlanInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDatabaseContext<PlanShemeDbContext>(configuration);
+        services.AddScoped<ISaveChangesInterceptor, PlansConcurrencyPreflightInterceptor>();
+
+        services.AddDatabaseContext<PlanShemeDbContext>(configuration, (sp, options) =>
+        {
+            options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
+        });
 
         services.AddScoped<IPlanRepositoryServices, PlanRepositoryServices>();
         services.AddScoped<IPlanRepository, PlanRepository>();

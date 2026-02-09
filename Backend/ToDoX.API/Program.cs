@@ -6,6 +6,11 @@ using Account.API.Endpoints;
 using ToDoX.Shared.Core.Extensions;
 using Asp.Versioning;
 using Microsoft.OpenApi;
+using System.Text.Json.Serialization.Metadata;
+
+using MvcJsonOptions = Microsoft.AspNetCore.Mvc.JsonOptions;
+using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -40,10 +45,20 @@ builder.Services.AddCors(options =>
         .AllowAnyMethod());
 });
 
-builder.Services.AddControllers().AddJsonOptions(o =>
+builder.Services.AddControllers().AddJsonOptions((MvcJsonOptions o) =>
 {
     o.JsonSerializerOptions.PropertyNamingPolicy = null;
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    o.JsonSerializerOptions.AllowOutOfOrderMetadataProperties = true;
+});
+
+builder.Services.ConfigureHttpJsonOptions((HttpJsonOptions o) =>
+{
+    o.SerializerOptions.PropertyNameCaseInsensitive = true;
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    o.SerializerOptions.TypeInfoResolverChain.Add(new DefaultJsonTypeInfoResolver());
+    o.SerializerOptions.AllowOutOfOrderMetadataProperties = true;
+
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -51,6 +66,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "ToDoX API", Version = "v1" });
 });
+
 
 var app = builder.Build();
 
