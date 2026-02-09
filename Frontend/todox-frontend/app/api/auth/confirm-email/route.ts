@@ -1,12 +1,36 @@
 import { NextResponse } from "next/server";
 
-type ConfirmEmailRequest = {
-	userId: string;
-	token: string;
-};
+function trimTrailingSlashes(url: string): string {
+	let s = url;
+	while (s.endsWith("/")) s = s.slice(0, -1);
+	return s;
+}
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+	return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function readString(v: unknown): string | null {
+	return typeof v === "string" && v.trim() ? v.trim() : null;
+}
 
 export async function POST(req: Request) {
-	const body = (await req.json()) as ConfirmEmailRequest;
+	let bodyUnknown: unknown;
+	try {
+		bodyUnknown = await req.json();
+	} catch {
+		return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+	}
+
+	const userId = isRecord(bodyUnknown) ? readString(bodyUnknown.userId) : null;
+	const token = isRecord(bodyUnknown) ? readString(bodyUnknown.token) : null;
+
+	if (!userId || !token) {
+		return NextResponse.json(
+			{ error: "userId and token are required" },
+			{ status: 400 },
+		);
+	}
 
 	const backendUrl = process.env.BACKEND_URL;
 	if (!backendUrl) {
@@ -17,18 +41,20 @@ export async function POST(req: Request) {
 	}
 
 	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
-	const base = backendUrl.replace(/\/+$/, "");
+	const base = trimTrailingSlashes(backendUrl);
 
-	const r = await fetch(`${base}/api/${apiVersion}/account/login`, {
+	const BACKEND_PATH = "account/confirm-email";
+
+	const target = `${base}/api/${apiVersion}/${BACKEND_PATH}`;
+
+	const r = await fetch(target, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({
-			userId: body.userId,
-			token: body.token,
-		}),
+		headers: { "Content-Type": "application/json", Accept: "application/json" },
+		body: JSON.stringify({ userId, token }),
 	});
 
 	const text = await r.text();
+
 	return new NextResponse(
 		text || (r.ok ? JSON.stringify({ ok: true }) : "Confirm email failed"),
 		{

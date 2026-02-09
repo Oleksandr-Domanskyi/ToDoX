@@ -1,3 +1,4 @@
+import { trimTrailingSlashes } from "@/shared/lib/url";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -8,7 +9,7 @@ function backendApiBase(): string {
 	if (!u) throw new Error("BACKEND_URL is not set");
 
 	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
-	const base = u.replace(/\/+$/, "");
+	const base = trimTrailingSlashes(u);
 
 	return `${base}/api/${apiVersion}`;
 }

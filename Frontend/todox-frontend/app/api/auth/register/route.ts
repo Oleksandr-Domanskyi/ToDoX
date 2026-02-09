@@ -1,3 +1,4 @@
+import { trimTrailingSlashes } from "@/shared/lib/url";
 import { NextResponse } from "next/server";
 
 type RegisterRequest = {
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
 
 	try {
 		const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
-		const base = backendUrl.replace(/\/+$/, "");
+		const base = trimTrailingSlashes(backendUrl);
 
 		const r = await fetch(`${base}/api/${apiVersion}/account/login`, {
 			method: "POST",

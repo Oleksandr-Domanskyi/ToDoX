@@ -1,3 +1,4 @@
+import { trimTrailingSlashes } from "@/shared/lib/url";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -14,12 +15,11 @@ async function getAccessToken(): Promise<string | null> {
 }
 
 function backendApiBase(): string {
-	// серверные env (не NEXT_PUBLIC)
 	const backendUrl = process.env.BACKEND_URL;
 	if (!backendUrl) throw new Error("BACKEND_URL is not set");
 
 	const apiVersion = process.env.BACKEND_API_VERSION ?? "v1";
-	const base = backendUrl.replace(/\/+$/, "");
+	const base = trimTrailingSlashes(backendUrl);
 	return `${base}/api/${apiVersion}`;
 }
 
@@ -32,15 +32,12 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 }
 
 function toFlatBlockDto(block: unknown): Record<string, unknown> {
-	// unwrap { data: ... }
 	const u =
 		isRecord(block) && "data" in block ?
 			(block as { data: unknown }).data
 		:	block;
 
 	const b = isRecord(u) ? u : {};
-
-	// type (поддержка type/Type)
 	const rawType = (b.type ?? b.Type) as unknown;
 
 	let type: "text" | "image" | "checklist" | "code" = "text";
@@ -52,7 +49,6 @@ function toFlatBlockDto(block: unknown): Record<string, unknown> {
 	) {
 		type = rawType;
 	} else {
-		// эвристика по полям
 		if (
 			typeof b.richTextJson === "string" ||
 			typeof b.RichTextJson === "string"
